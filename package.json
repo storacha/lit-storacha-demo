@@ -1,0 +1,36 @@
+{
+  "name": "lit-storacha-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-actions": "node esbuild.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@lit-protocol/auth-helpers": "^7.0.2",
+    "@lit-protocol/constants": "^7.0.2",
+    "@lit-protocol/contracts-sdk": "^7.0.2",
+    "@lit-protocol/encryption": "^7.0.2",
+    "@lit-protocol/lit-auth-client": "^7.0.3",
+    "@lit-protocol/lit-node-client": "^7.0.2",
+    "@ucanto/core": "^10.0.1",
+    "@ucanto/principal": "^9.0.1",
+    "@ucanto/server": "^10.0.0",
+    "@ucanto/validator": "^9.0.2",
+    "dotenv": "^16.4.7",
+    "ethers": "5.7.1",
+    "multiformats": "^13.3.1"
+  },
+  "devDependencies": {
+    "@lit-protocol/types": "^7.0.2",
+    "@types/node": "^22.10.2",
+    "esbuild": "^0.24.2",
+    "glob": "^11.0.0",
+    "typescript": "^5.7.2"
+  }
+}
