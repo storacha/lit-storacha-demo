@@ -188,6 +188,13 @@ async function main() {
     }
   }
 
+  /**
+   * TODO:
+   * const decryptInvocation = await Decrypt.delegate(invocation)
+   * const { ok: bytes } = await decryptInvocation.archive()
+   * const dagJSON = dagJSON.stringify(bytes)
+   */
+
   const litActionSignatures = await litNodeClient.executeJs({
     sessionSigs,
     ipfsId: ipfsHash,
