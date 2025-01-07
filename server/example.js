@@ -6,6 +6,7 @@ import { CID } from 'multiformats'
 import * as Client from '@ucanto/client'
 import * as HTTP from '@ucanto/transport/http'
 import * as CAR from '@ucanto/transport/car'
+import * as dagJSON from '@ipld/dag-json'
 
 async function main() {
   const Decrypt = capability({
@@ -50,17 +51,16 @@ async function main() {
 
   const decryptInvocation = await Decrypt.delegate(options)
 
-  // const { ok: bytes } = await decryptInvocation.archive()
+  const { ok: bytes } = await decryptInvocation.archive()
 
-  // // send bytes to Lit lambda:
-  // import * as dagJSON from '@ipld/dag-json'
-  // dagJSON.stringify(bytes) // JSON compatible
+  // send bytes to Lit lambda:
+  const jsonString = dagJSON.stringify(bytes) // JSON compatible
 
+  // in Lit lambda:
+  const delegation = await extract(dagJSON.parse(jsonString))
+  //const delegation = await extract(bytes)
 
-  // // in Lit lambda:
-  // const delegation = await extract(dagJSON.parse(string))
-
-  const validateInvocation = await access(decryptInvocation, {
+  const validateInvocation = await access(delegation.ok, {
     principal: Verifier,
     capability: Decrypt,
     authority: serverSignerId,

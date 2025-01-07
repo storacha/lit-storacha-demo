@@ -3,7 +3,11 @@ import { join } from 'path'
 import { Blob } from 'buffer'
 import { ethers } from 'ethers'
 import { promises as fs } from 'fs'
-import { ed25519 } from '@ucanto/principal'
+import * as dagJSON from '@ipld/dag-json'
+import { ed25519, Verifier } from '@ucanto/principal'
+import { ok, Schema, DID, fail, access } from '@ucanto/validator'
+import { capability } from '@ucanto/server'
+import { CID } from 'multiformats'
 import { encryptFile } from '@lit-protocol/encryption'
 import { LitContracts } from '@lit-protocol/contracts-sdk'
 import { LitNodeClient } from '@lit-protocol/lit-node-client'
@@ -87,11 +91,17 @@ async function main() {
 
   // ========== SETUP LIC ACTION  ===========
   // they are using cid  v0
-  const ipfsHash = 'QmUEAPsiwmdygz82kEz6SxfUv3yPWpGQfJbBb2kuGMZ8CU'
+  const ipfsHash = 'QmQFLsGAo1oJjhyEQpN6LCqKuLS1wD3kz91i5PL1ejxy5A'
 
   // ========== DEFINE ACC ===========
 
-  const spaceDID = `did:key:z6MkwXULb59LMASZgTDqvpmFGUbbLE5CxZkWMpGHYXVJ613R`
+  /** did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi */
+  const alice = ed25519.parse(
+    'MgCZT5vOnYZoVAeyjnzuJIVY9J4LNtJ+f8Js0cTPuKUpFne0BVEDJjEu6quFIU8yp91/TY/+MYK8GvlKoTDnqOCovCVM='
+  )
+
+  // Temporary testing: bypassing the need for a delegation proof
+  const spaceDID = alice.did() //`did:key:z6MkwXULb59LMASZgTDqvpmFGUbbLE5CxZkWMpGHYXVJ613R`
 
   /** @type import('@lit-protocol/types').AccessControlConditions */
   const accessControlConditions = [
@@ -174,34 +184,54 @@ async function main() {
   const serverSigner = await ed25519.generate()
   const serverSignerId = serverSigner.withDID('did:web:test.web3.storage')
 
-  /** did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi */
-  const alice = ed25519.parse(
-    'MgCZT5vOnYZoVAeyjnzuJIVY9J4LNtJ+f8Js0cTPuKUpFne0BVEDJjEu6quFIU8yp91/TY/+MYK8GvlKoTDnqOCovCVM='
-  )
-
-  const invocation = {
+  const delegationOptions = {
     issuer: alice,
     audience: serverSignerId,
     with: spaceDID,
     nb: {
-      resource: 'bafkreifyaljplfkkyegw6vxtqoyw4wggqcphlieuhwn4z4cwfkz54m5lgu'
-    }
+      resource: CID.parse('bafkreifyaljplfkkyegw6vxtqoyw4wggqcphlieuhwn4z4cwfkz54m5lgu')
+    },
+    expiration: Date.UTC(2025, 2, 7)
   }
 
-  const litActionSignatures = await litNodeClient.executeJs({
+  const decryptDelegation = await Decrypt.delegate(delegationOptions)
+  const { ok: bytes } = await decryptDelegation.archive()
+  const json = dagJSON.stringify(bytes) // JSON compatible
+
+  const litActionResponse = await litNodeClient.executeJs({
     sessionSigs,
     ipfsId: ipfsHash,
     jsParams: {
       accessControlConditions,
       ciphertext,
       dataToEncryptHash,
-      invocation,
+      invocation: json,
       spaceDID
     }
   })
   console.log('✅ Executed the Lit Action')
-  console.log(litActionSignatures)
+  litActionResponse.response = JSON.parse(/** @type string*/ (litActionResponse.response))
+  console.log(litActionResponse)
 }
+
+const Decrypt = capability({
+  can: 'space/content/decrypt',
+  with: DID.match({ method: 'key' }),
+  nb: Schema.struct({
+    resource: Schema.link()
+  }),
+  derives: (child, parent) => {
+    if (child.with !== parent.with) {
+      return fail(`Can not derive ${child.can} with ${child.with} from ${parent.with}`)
+    }
+    if (child.nb.resource !== parent.nb.resource) {
+      return fail(
+        `Can not derive ${child.can} with ${child.nb.resource} from ${parent.nb.resource}`
+      )
+    }
+    return ok({})
+  }
+})
 
 main()
   .then(() => process.exit(0))
