@@ -23,7 +23,13 @@ dependencies:
   '@lit-protocol/lit-node-client':
     specifier: ^7.0.2
     version: 7.0.4(typescript@5.7.2)
+  '@ucanto/client':
+    specifier: ^9.0.1
+    version: 9.0.1
   '@ucanto/core':
+    specifier: ^10.0.1
+    version: 10.0.1
+  '@ucanto/interface':
     specifier: ^10.0.1
     version: 10.0.1
   '@ucanto/principal':
@@ -32,9 +38,15 @@ dependencies:
   '@ucanto/server':
     specifier: ^10.0.0
     version: 10.0.0
+  '@ucanto/transport':
+    specifier: ^9.1.1
+    version: 9.1.1
   '@ucanto/validator':
     specifier: ^9.0.2
     version: 9.0.2
+  car:
+    specifier: link:@ucanto/transport/car
+    version: link:@ucanto/transport/car
   dotenv:
     specifier: ^16.4.7
     version: 16.4.7
@@ -1341,6 +1353,13 @@ packages:
       undici-types: 6.20.0
     dev: true
 
+  /@ucanto/client@9.0.1:
+    resolution: {integrity: sha512-cV8w3AnaZaYCdUmyFFICj8YhFckDoy2DvWgAzGDMkPz0WbUW4lw9Tjm4hEE8x5kiP47wYej/pHKWCcoELiU0qw==}
+    dependencies:
+      '@ucanto/core': 10.0.1
+      '@ucanto/interface': 10.0.1
+    dev: false
+
   /@ucanto/core@10.0.1:
     resolution: {integrity: sha512-1BfUaJu0/c9Rl/WdZSDbScJJLsPsPe1g4ynl5kubUj3xDD/lyp/Q12PQVQ2X7hDiWwkpwmxCkRMkOxwc70iNKQ==}
     dependencies:
@@ -1377,6 +1396,13 @@ packages:
       '@ucanto/interface': 10.0.1
       '@ucanto/principal': 9.0.1
       '@ucanto/validator': 9.0.2
+    dev: false
+
+  /@ucanto/transport@9.1.1:
+    resolution: {integrity: sha512-3CR17nEemOVaTuMZa6waWgVL4sLxSPcxYvpaNeJ6NZo1rfsqdyRXOtbVV/RcI2BtUL0Cao6JM6P9+gdghfc5ng==}
+    dependencies:
+      '@ucanto/core': 10.0.1
+      '@ucanto/interface': 10.0.1
     dev: false
 
   /@ucanto/validator@9.0.2:

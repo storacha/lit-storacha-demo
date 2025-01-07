@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-actions": "node esbuild.js"
+    "build-actions": "node esbuild.js",
+    "lit": "node src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -18,10 +19,14 @@
     "@lit-protocol/encryption": "^7.0.2",
     "@lit-protocol/lit-auth-client": "^7.0.3",
     "@lit-protocol/lit-node-client": "^7.0.2",
+    "@ucanto/client": "^9.0.1",
     "@ucanto/core": "^10.0.1",
+    "@ucanto/interface": "^10.0.1",
     "@ucanto/principal": "^9.0.1",
     "@ucanto/server": "^10.0.0",
+    "@ucanto/transport": "^9.1.1",
     "@ucanto/validator": "^9.0.2",
+    "car": "link:@ucanto/transport/car",
     "dotenv": "^16.4.7",
     "ethers": "5.7.1",
     "multiformats": "^13.3.1"
