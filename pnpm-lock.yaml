@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@ipld/dag-json':
+    specifier: ^10.2.3
+    version: 10.2.3
   '@lit-protocol/auth-helpers':
     specifier: ^7.0.2
     version: 7.0.4(typescript@5.7.2)

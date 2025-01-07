@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@ipld/dag-json": "^10.2.3",
     "@lit-protocol/auth-helpers": "^7.0.2",
     "@lit-protocol/constants": "^7.0.2",
     "@lit-protocol/contracts-sdk": "^7.0.2",

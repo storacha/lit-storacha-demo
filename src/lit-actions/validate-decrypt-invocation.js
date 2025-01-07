@@ -1,13 +1,13 @@
 import { ok, Schema, DID, fail, access } from '@ucanto/validator'
-import { capability } from '@ucanto/server'
-import { CID } from 'multiformats'
 import { extract } from '@ucanto/core/delegation'
+import { Verifier } from '@ucanto/principal'
+import { capability } from '@ucanto/server'
 import * as dagJSON from '@ipld/dag-json'
-import { Verifier } from '@ucanto/principal/ed25519'
+import { error } from '@ucanto/core/result'
 
 const decrypt = async () => {
   try {
-    const invocationResult = await Lit.Actions.runOnce(
+    const validateAccess = await Lit.Actions.runOnce(
       { waitForResponse: true, name: 'validate invocation' },
       async () => {
         const Decrypt = capability({
@@ -29,28 +29,38 @@ const decrypt = async () => {
           }
         })
 
-        const delegation = await extract(dagJSON.parse(invocation))
+        const value = dagJSON.parse(invocation)
+        const delegation = await extract(value)
+
+        const decryptCapability = delegation.ok.capabilities.find(cap => cap.can === Decrypt.can)
+
+        if (decryptCapability.with !== spaceDID) {
+          return JSON.stringify(
+            error(
+              `Invalid "with" in delegation. Decryption is allowed only for files associated with spaceDID: ${spaceDID}!`
+            )
+          )
+        }
 
         const authorization = await access(delegation.ok, {
           principal: Verifier,
           capability: Decrypt,
           authority: 'did:web:test.web3.storage',
-          validateAuthorization: () => ok({})
+          validateAuthorization: () => ok({}) // TODO: check if it's not revoked
         })
 
-        return authorization
+        /**
+         * Stringify the return object to ensure it can be properly accessed externally.
+         * Otherwise, it would be converted to a string in an unreadable format.
+         */
+        return JSON.stringify(authorization)
       }
     )
 
-    console.log('spaceDID: ', spaceDID)
-    if (invocation.with !== spaceDID) {
-      throw new Error('Space is incorrect!')
-    }
+    /** @type any */
+    let response = { validateAccess }
 
-    let response = { invocationResult }
-    if (invocationResult && !invocationResult.error) {
-      console.log(accessControlConditions)
-
+    if (validateAccess && !JSON.parse(validateAccess).error) {
       const decryptedString = await Lit.Actions.decryptAndCombine({
         accessControlConditions,
         ciphertext,
@@ -64,7 +74,7 @@ const decrypt = async () => {
 
     Lit.Actions.setResponse({ response: JSON.stringify(response) })
   } catch (/** @type any*/ error) {
-    Lit.Actions.setResponse({ response: error.message })
+    Lit.Actions.setResponse({ response: error })
   }
 }
 
