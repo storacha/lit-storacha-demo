@@ -3,33 +3,30 @@ import { join } from 'path'
 import { Blob } from 'buffer'
 import { ethers } from 'ethers'
 import { promises as fs } from 'fs'
-import { LIT_ABILITY, LIT_NETWORK } from '@lit-protocol/constants'
-import { LitNodeClient } from '@lit-protocol/lit-node-client'
-import { LitContracts } from '@lit-protocol/contracts-sdk'
+import { ed25519 } from '@ucanto/principal'
 import { encryptFile } from '@lit-protocol/encryption'
+import { LitContracts } from '@lit-protocol/contracts-sdk'
+import { LitNodeClient } from '@lit-protocol/lit-node-client'
+import { LIT_ABILITY, LIT_NETWORK } from '@lit-protocol/constants'
 import {
   createSiweMessage,
   generateAuthSig,
   LitAccessControlConditionResource,
   LitActionResource
 } from '@lit-protocol/auth-helpers'
-import { ed25519 } from '@ucanto/principal'
-
-// https://developer.litprotocol.com/sdk/serverless-signing/combining-decryption-shares
-// https://github.com/LIT-Protocol/developer-guides-code/blob/6f523bb1a81056258cbfa35bac1ce40613d4322e/decrypt-api-key-in-action/nodejs/src/litAction.ts
 
 /**
  * 1. have eth wallet
  * 2. mint capacity credits
  * 3. get the AuthSig
- * 4. get the ipfs cid v0 for the li action
+ * 4. get the ipfs cid v0 for the lit action
  * 5. define the acc
  * 6. encrypt a file
  * 7. get the session signatures
  * 8. execute the lit action
  */
 
-dotenv.config({ path: '../.env' })
+dotenv.config()
 
 const PK = process.env.PK || ''
 const RPC_PROVIDER = 'https://yellowstone-rpc.litprotocol.com' // testnet
@@ -89,10 +86,12 @@ async function main() {
   console.log('✅ Capacity Delegation Auth Sig created')
 
   // ========== SETUP LIC ACTION  ===========
-  // they are using version 0
-  const ipfsHash = 'QmV4UbQ1PWsoCwXrsqda4BPNQDRh3UACoatCx58H3tywc7'
+  // they are using cid  v0
+  const ipfsHash = 'QmUEAPsiwmdygz82kEz6SxfUv3yPWpGQfJbBb2kuGMZ8CU'
 
   // ========== DEFINE ACC ===========
+
+  const spaceDID = `did:key:z6MkwXULb59LMASZgTDqvpmFGUbbLE5CxZkWMpGHYXVJ613R`
 
   /** @type import('@lit-protocol/types').AccessControlConditions */
   const accessControlConditions = [
@@ -101,7 +100,7 @@ async function main() {
       standardContractType: '',
       chain: 'ethereum',
       method: '',
-      parameters: [':currentActionIpfsId'],
+      parameters: [':currentActionIpfsId', spaceDID],
       returnValueTest: {
         comparator: '=',
         value: ipfsHash
@@ -111,7 +110,7 @@ async function main() {
 
   // ========== ENCRYPT FILE  ===========
 
-  const filePath = join(process.cwd(), '../', 'testFile.md')
+  const filePath = join(process.cwd(), 'testFile.md')
   const fileContent = await fs.readFile(filePath)
   let blob = new Blob([fileContent])
 
@@ -123,8 +122,10 @@ async function main() {
   console.log('✅ Encrypted the file')
   console.log('ℹ️  The hash of the data that was encrypted:', dataToEncryptHash)
 
-  const outputPath = join(process.cwd(), '../', 'testFile-encrypted.md')
+  const outputPath = join(process.cwd(), 'testFile-encrypted.md')
   await fs.writeFile(outputPath, ciphertext, 'utf8')
+
+  // ========== SESSION SIGNATURES  ===========
 
   console.log('🔄 Generating the Resource String...')
   // so only this file can be decrypted
@@ -181,22 +182,21 @@ async function main() {
   const invocation = {
     issuer: alice,
     audience: serverSignerId,
-    with: `did:key:z6MkwXULb59LMASZgTDqvpmFGUbbLE5CxZkWMpGHYXVJ613R`, // spaceDID
+    with: spaceDID,
     nb: {
       resource: 'bafkreifyaljplfkkyegw6vxtqoyw4wggqcphlieuhwn4z4cwfkz54m5lgu'
     }
   }
-  console.log(invocation.nb)
 
   const litActionSignatures = await litNodeClient.executeJs({
     sessionSigs,
-    // code,
     ipfsId: ipfsHash,
     jsParams: {
       accessControlConditions,
       ciphertext,
       dataToEncryptHash,
-      invocation
+      invocation,
+      spaceDID
     }
   })
   console.log('✅ Executed the Lit Action')

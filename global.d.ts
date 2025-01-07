@@ -250,7 +250,7 @@ declare global {
         dataToEncryptHash,
         authSig,
         chain
-      }: string): string
+      }): string
       /**
    * Decrypt to a single node.
    * @param {string} accessControlConditions The access control conditions
@@ -353,6 +353,12 @@ declare global {
 
   export type ethers = Ethers
   export const ethers: typeof Ethers
+
+  export const invocation: any
+  export const spaceDID: string
+  export const accessControlConditions: string
+  export const ciphertext: string
+  export const dataToEncryptHash: string
 }
 
 export {}
