@@ -1,6 +1,7 @@
-import { ok, Schema, DID, fail, access } from '@ucanto/validator'
-import { capability } from '@ucanto/server'
-import { ed25519 } from '@ucanto/principal'
+import { Schema, DID, fail, access, DIDResolutionError } from '@ucanto/validator'
+import { capability, ok, error } from '@ucanto/server'
+import { extract } from '@ucanto/core/delegation'
+import { ed25519, Verifier } from '@ucanto/principal'
 import { CID } from 'multiformats'
 import * as Client from '@ucanto/client'
 import * as HTTP from '@ucanto/transport/http'
@@ -36,20 +37,34 @@ async function main() {
   )
   const serverSignerId = signer.withDID('did:web:test.web3.storage')
 
-  const invocation = {
+  const options = {
     issuer: alice,
     audience: serverSignerId,
-    with: `did:key:z6MkwXULb59LMASZgTDqvpmFGUbbLE5CxZkWMpGHYXVJ613R`, // spaceDID
+    // with: `did:key:z6MkwXULb59LMASZgTDqvpmFGUbbLE5CxZkWMpGHYXVJ613R`, // spaceDID
+    with: alice.did(),
     nb: {
       resource: CID.parse('bafkreifyaljplfkkyegw6vxtqoyw4wggqcphlieuhwn4z4cwfkz54m5lgu')
     }
     // expiration: Date.UTC(2025, 2, 7)
   }
 
-  const decryptInvocation = Decrypt.invoke(invocation)
+  const decryptInvocation = await Decrypt.delegate(options)
+
+  // const { ok: bytes } = await decryptInvocation.archive()
+
+  // // send bytes to Lit lambda:
+  // import * as dagJSON from '@ipld/dag-json'
+  // dagJSON.stringify(bytes) // JSON compatible
+
+
+  // // in Lit lambda:
+  // const delegation = await extract(dagJSON.parse(string))
+
   const validateInvocation = await access(decryptInvocation, {
+    principal: Verifier,
     capability: Decrypt,
-    authority: serverSignerId
+    authority: serverSignerId,
+    validateAuthorization: () => ok({})
   })
   console.log(validateInvocation)
 
@@ -73,6 +88,6 @@ async function main() {
 main()
   .then(() => process.exit(0))
   .catch(err => {
-    console.error(err.message)
+    console.error(err)
     process.exit(1)
   })
