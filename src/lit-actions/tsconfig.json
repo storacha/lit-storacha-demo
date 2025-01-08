@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": "./",
+    "paths": {
+      "*": ["global.d.ts"]
+    }
+  },
+  "include": ["global.d.ts", "**/*.ts"]
+}

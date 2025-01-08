@@ -1,55 +1,35 @@
-import dotenv from 'dotenv'
-import { join } from 'path'
-import { Blob } from 'buffer'
-import { ethers } from 'ethers'
-import { promises as fs } from 'fs'
-import * as dagJSON from '@ipld/dag-json'
-import { ed25519 } from '@ucanto/principal'
-import { CID } from 'multiformats'
-import { encryptFile } from '@lit-protocol/encryption'
-import { LitContracts } from '@lit-protocol/contracts-sdk'
-import { LitNodeClient } from '@lit-protocol/lit-node-client'
-import { LIT_ABILITY, LIT_NETWORK } from '@lit-protocol/constants'
 import {
   createSiweMessage,
   generateAuthSig,
   LitAccessControlConditionResource,
   LitActionResource
 } from '@lit-protocol/auth-helpers'
+import { CID } from 'multiformats'
+import { promises as fs } from 'fs'
+import * as dagJSON from '@ipld/dag-json'
+import { ed25519 } from '@ucanto/principal'
+import { LitContracts } from '@lit-protocol/contracts-sdk'
+import { LIT_NETWORK, LIT_ABILITY } from '@lit-protocol/constants'
 
 import { Decrypt } from './capability.js'
-
-/**
- * 1. have eth wallet
- * 2. mint capacity credits
- * 3. get the AuthSig
- * 4. get the ipfs cid v0 for the lit action
- * 5. define the acc
- * 6. encrypt a file
- * 7. get the session signatures
- * 8. execute the lit action
- */
-
-dotenv.config()
-
-// Configuration
-const PK = process.env.PK || ''
-const RPC_PROVIDER = 'https://yellowstone-rpc.litprotocol.com' // testnet
-const CHAIN = 'ethereum'
-const DEBUG = false
-let capacityTokenId = process.env.LIT_CAPACITY_CREDIT_TOKEN_ID
+import { accessControlConditions, ipfsHash, spaceDID } from './acc.js'
+import { CAPACITY_TOKEN_ID, CHAIN, controllerWallet, DEBUG, litNodeClient } from './config.js'
 
 async function main() {
-  // ========== Controller Setup ===========
-  const provider = new ethers.providers.JsonRpcProvider(RPC_PROVIDER)
-  const controllerWallet = new ethers.Wallet(PK, provider)
+  console.log(`>>> Decryption process initiated...`)
+
+  // ========== GET ENCRYPT OUTPUTS ===========
+
+  console.log('🔄 Getting encrypt output resources...')
+  const ciphertext = await fs.readFile('testFile-encrypted.md', 'utf8')
+  const dataToEncryptHash = JSON.parse(
+    await fs.readFile('dataToEncryptHash.json', 'utf8')
+  ).dataToEncryptHash
+  console.log('✅ Successfully loaded the encrypted file and "dataToEncryptHash"')
+
+  // ========== CONNECT TO LIT NETWORK ===========
 
   console.log('🔄 Connecting to the Lit network...')
-  const litNodeClient = new LitNodeClient({
-    litNetwork: LIT_NETWORK.DatilTest,
-    debug: DEBUG
-  })
-
   await litNodeClient.connect()
   console.log('✅ Connected to the Lit network')
 
@@ -65,6 +45,7 @@ async function main() {
   await contractClient.connect()
   console.log('✅ Connected LitContracts client to network')
 
+  let capacityTokenId = CAPACITY_TOKEN_ID
   if (capacityTokenId === '' || capacityTokenId === undefined) {
     console.log('🔄 No Capacity Credit provided, minting a new one...')
     capacityTokenId = (
@@ -80,7 +61,7 @@ async function main() {
     console.log(`ℹ️  Using provided Capacity Credit with ID: ${capacityTokenId}`)
   }
 
-  // I don't understand why I need to delegate the tokens to myself
+  // ========== GETTING AUTH SIG ===========
   console.log('🔄 Creating capacityDelegationAuthSig...')
   const { capacityDelegationAuthSig } = await litNodeClient.createCapacityDelegationAuthSig({
     dAppOwnerWallet: controllerWallet,
@@ -89,52 +70,6 @@ async function main() {
     uses: '1'
   })
   console.log('✅ Capacity Delegation Auth Sig created')
-
-  // ========== SETUP LIC ACTION  ===========
-  // they are using cid  v0
-  const ipfsHash = 'QmQFLsGAo1oJjhyEQpN6LCqKuLS1wD3kz91i5PL1ejxy5A'
-
-  // ========== DEFINE ACC ===========
-
-  /** did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi */
-  const alice = ed25519.parse(
-    'MgCZT5vOnYZoVAeyjnzuJIVY9J4LNtJ+f8Js0cTPuKUpFne0BVEDJjEu6quFIU8yp91/TY/+MYK8GvlKoTDnqOCovCVM='
-  )
-
-  // Temporary testing: bypassing the need for a delegation proof
-  const spaceDID = alice.did() //`did:key:z6MkwXULb59LMASZgTDqvpmFGUbbLE5CxZkWMpGHYXVJ613R`
-
-  /** @type import('@lit-protocol/types').AccessControlConditions */
-  const accessControlConditions = [
-    {
-      contractAddress: '',
-      standardContractType: '',
-      chain: 'ethereum',
-      method: '',
-      parameters: [':currentActionIpfsId', spaceDID],
-      returnValueTest: {
-        comparator: '=',
-        value: ipfsHash
-      }
-    }
-  ]
-
-  // ========== ENCRYPT FILE  ===========
-
-  const filePath = join(process.cwd(), 'testFile.md')
-  const fileContent = await fs.readFile(filePath)
-  let blob = new Blob([fileContent])
-
-  console.log('🔐 Encrypting file...')
-  const { ciphertext, dataToEncryptHash } = await encryptFile(
-    { file: blob, accessControlConditions, chain: CHAIN },
-    litNodeClient
-  )
-  console.log('✅ Encrypted the file')
-  console.log('ℹ️  The hash of the data that was encrypted:', dataToEncryptHash)
-
-  const outputPath = join(process.cwd(), 'testFile-encrypted.md')
-  await fs.writeFile(outputPath, ciphertext, 'utf8')
 
   // ========== SESSION SIGNATURES  ===========
 
@@ -148,7 +83,7 @@ async function main() {
 
   console.log('🔄 Getting the Session Signatures...')
   const sessionSigs = await litNodeClient.getSessionSigs({
-    chain: 'ethereum',
+    chain: CHAIN,
     capabilityAuthSigs: [capacityDelegationAuthSig],
     expiration: new Date(Date.now() + 1000 * 60 * 5).toISOString(), // 5 min
     resourceAbilityRequests: [
@@ -179,7 +114,14 @@ async function main() {
   })
   console.log('✅ Generated the Session Signatures')
 
-  console.log('🔄 Executing the Lit Action to decrypt...')
+  // ==========  EXECUTE LIT ACTION TO DECRYPT ===========
+
+  console.log('🔄 Setting UCAN delegation...')
+
+  /** did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi */
+  const alice = ed25519.parse(
+    'MgCZT5vOnYZoVAeyjnzuJIVY9J4LNtJ+f8Js0cTPuKUpFne0BVEDJjEu6quFIU8yp91/TY/+MYK8GvlKoTDnqOCovCVM='
+  )
 
   // Service will have a well known DID
   const serverSigner = await ed25519.generate()
@@ -188,16 +130,18 @@ async function main() {
   const delegationOptions = {
     issuer: alice,
     audience: serverSignerId,
-    with: spaceDID,
+    with: spaceDID, /// NOTE: Using Alice's DID in this example, so we don't need to create delegation chain.
     nb: {
       resource: CID.parse('bafkreifyaljplfkkyegw6vxtqoyw4wggqcphlieuhwn4z4cwfkz54m5lgu')
     },
-    expiration: Date.UTC(2025, 2, 7)
+    expiration: new Date(Date.now() + 86400000).getTime() // next 24h
   }
 
   const decryptDelegation = await Decrypt.delegate(delegationOptions)
   const { ok: bytes } = await decryptDelegation.archive()
-  const json = dagJSON.stringify(bytes) // JSON compatible
+  const delegationJson = dagJSON.stringify(bytes) // JSON compatible
+
+  console.log('🔄 Executing Lit Action to validate UCAN and decrypt the file...')
 
   const litActionResponse = await litNodeClient.executeJs({
     sessionSigs,
@@ -206,18 +150,19 @@ async function main() {
       accessControlConditions,
       ciphertext,
       dataToEncryptHash,
-      invocation: json,
+      invocation: delegationJson,
       spaceDID
     }
   })
-  console.log('✅ Executed the Lit Action')
+
   litActionResponse.response = JSON.parse(/** @type string*/ (litActionResponse.response))
+
+  console.log('✅ Executed the Lit Action')
   console.log(litActionResponse)
 }
-
 main()
   .then(() => process.exit(0))
   .catch(err => {
-    console.error(err.message)
+    console.error(err)
     process.exit(1)
   })

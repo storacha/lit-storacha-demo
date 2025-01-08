@@ -32,9 +32,9 @@ const decrypt = async () => {
         const value = dagJSON.parse(invocation)
         const delegation = await extract(value)
 
-        const decryptCapability = delegation.ok.capabilities.find(cap => cap.can === Decrypt.can)
+        const decryptCapability = delegation.ok?.capabilities.find(cap => cap.can === Decrypt.can)
 
-        if (decryptCapability.with !== spaceDID) {
+        if (decryptCapability?.with !== spaceDID) {
           return JSON.stringify(
             error(
               `Invalid "with" in delegation. Decryption is allowed only for files associated with spaceDID: ${spaceDID}!`

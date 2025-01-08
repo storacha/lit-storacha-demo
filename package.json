@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-actions": "node esbuild.js"
+    "build-actions": "node src/lit-actions/esbuild.js",
+    "ipfsCID": "./node_modules/.bin/ipfs-only-hash --cidVersion=0 src/lit-actions/dist/validate-decrypt-invocation.js"
   },
   "keywords": [],
   "author": "",
@@ -32,6 +33,7 @@
     "@types/node": "^22.10.2",
     "esbuild": "^0.24.2",
     "glob": "^11.0.0",
+    "ipfs-only-hash": "^4.0.0",
     "typescript": "^5.7.2"
   }
 }

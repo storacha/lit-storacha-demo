@@ -9,7 +9,6 @@ build({
   sourceRoot: './',
   platform: 'browser',
   metafile: true
-  // inject: ['./esbuild-shims.js']
 }).catch(err => {
   console.error(err)
   return process.exit(1)

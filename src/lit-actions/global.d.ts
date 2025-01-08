@@ -1,7 +1,16 @@
 import { ethers as Ethers } from 'ethers'
 
-declare global {
-  export declare namespace Lit {
+export declare namespace LitActionContext {
+  export type ethers = Ethers
+  export const ethers: typeof Ethers
+
+  export const invocation: any
+  export const spaceDID: string
+  export const accessControlConditions: string
+  export const ciphertext: string
+  export const dataToEncryptHash: string
+
+  export namespace Lit {
     export namespace Actions {
       /**
        * Check if a given IPFS ID is permitted to sign using a given PKP tokenId
@@ -350,15 +359,6 @@ declare global {
       const customAuthResource: string | `"\\(true,${string})\\"`
     }
   }
-
-  export type ethers = Ethers
-  export const ethers: typeof Ethers
-
-  export const invocation: any
-  export const spaceDID: string
-  export const accessControlConditions: string
-  export const ciphertext: string
-  export const dataToEncryptHash: string
 }
 
 export {}
