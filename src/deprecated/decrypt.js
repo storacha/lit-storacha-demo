@@ -11,7 +11,7 @@ import { ed25519 } from '@ucanto/principal'
 import { LitContracts } from '@lit-protocol/contracts-sdk'
 import { LIT_NETWORK, LIT_ABILITY } from '@lit-protocol/constants'
 
-import { Decrypt } from './capability.js'
+import { Decrypt } from '../capability.js'
 import { accessControlConditions, ipfsHash, spaceDID } from './acc.js'
 import { CAPACITY_TOKEN_ID, CHAIN, controllerWallet, DEBUG, litNodeClient } from './config.js'
 

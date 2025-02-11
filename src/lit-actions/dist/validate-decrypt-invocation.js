@@ -11137,8 +11137,8 @@ ${unknown2.join("\n")}`)] : []
           });
           const value = parse3(invocation);
           const delegation = await extract(value);
-          const decryptCapability = delegation.ok.capabilities.find((cap) => cap.can === Decrypt.can);
-          if (decryptCapability.with !== spaceDID) {
+          const decryptCapability = delegation.ok?.capabilities.find((cap) => cap.can === Decrypt.can);
+          if (decryptCapability?.with !== spaceDID) {
             return JSON.stringify(
               error(
                 `Invalid "with" in delegation. Decryption is allowed only for files associated with spaceDID: ${spaceDID}!`
