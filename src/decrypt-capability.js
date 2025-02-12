@@ -1,7 +1,7 @@
 import { ok, Schema, DID, fail } from '@ucanto/validator'
 import { capability } from '@ucanto/server'
 
-export const Decrypt = capability({
+const Decrypt = capability({
   can: 'space/content/decrypt',
   with: DID.match({ method: 'key' }),
   nb: Schema.struct({
@@ -19,3 +19,5 @@ export const Decrypt = capability({
     return ok({})
   }
 })
+
+export default Decrypt

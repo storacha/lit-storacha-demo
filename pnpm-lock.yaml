@@ -29,9 +29,6 @@ dependencies:
   '@lit-protocol/lit-node-client':
     specifier: ^7.0.2
     version: 7.0.4(typescript@5.7.2)
-  '@storacha/client':
-    specifier: ^1.1.4
-    version: 1.1.4
   '@ucanto/core':
     specifier: ^10.0.1
     version: 10.0.1
@@ -44,6 +41,9 @@ dependencies:
   '@ucanto/validator':
     specifier: ^9.0.2
     version: 9.0.2
+  '@web3-storage/w3up-client':
+    specifier: ^17.1.2
+    version: 17.1.2
   dotenv:
     specifier: ^16.4.7
     version: 16.4.7
@@ -676,22 +676,14 @@ packages:
       multiformats: 11.0.2
     dev: false
 
-  /@ipld/dag-ucan@3.4.5:
-    resolution: {integrity: sha512-wiWhH0Ju7WgnumsarHCYtlo+1NRy+WIsXyAB7g2sDqVsKCyEJiLLmjeZzKqNv+qMxLnUS8bQ287cPiQ//s/oJQ==}
-    dependencies:
-      '@ipld/dag-cbor': 9.2.2
-      '@ipld/dag-json': 10.2.3
-      multiformats: 13.3.1
-    dev: false
-
-  /@ipld/unixfs@3.0.0:
-    resolution: {integrity: sha512-Tj3/BPOlnemcZQ2ETIZAO8hqAs9KNzWyX5J9+JCL9jDwvYwjxeYjqJ3v+9DusNvTBmJhZnGVP6ijUHrsuOLp+g==}
+  /@ipld/unixfs@2.2.0:
+    resolution: {integrity: sha512-lDQ2eRhJlbFaBoO3bhOmDVCLmpOnhwtwbilqUgAAhbhoPSmLrnv7gsBuToZjXOdPaEGSL7apkmm6nFrcU6zh4Q==}
     dependencies:
       '@ipld/dag-pb': 4.1.3
       '@multiformats/murmur3': 2.1.8
       '@perma/map': 1.0.3
       actor: 2.3.1
-      multiformats: 13.3.1
+      multiformats: 11.0.2
       protobufjs: 7.4.0
       rabin-rs: 2.1.0
     dev: false
@@ -1463,116 +1455,8 @@ packages:
       '@stablelib/wipe': 1.0.1
     dev: false
 
-  /@storacha/access@1.0.2:
-    resolution: {integrity: sha512-BoLF7BQSJhHPOQ6ln8JJgekEJOBKutWfzAGzZxvAHWsbtlKLwwqEJDupMLnlVQOBclRbHUFrssNhgSh+0Uz4Sg==}
-    dependencies:
-      '@ipld/car': 5.4.0
-      '@ipld/dag-ucan': 3.4.5
-      '@scure/bip39': 1.5.4
-      '@storacha/capabilities': 1.2.1
-      '@storacha/did-mailto': 1.0.1
-      '@storacha/one-webcrypto': 1.0.1
-      '@ucanto/client': 9.0.1
-      '@ucanto/core': 10.2.1
-      '@ucanto/interface': 10.1.1
-      '@ucanto/principal': 9.0.2
-      '@ucanto/transport': 9.1.1
-      '@ucanto/validator': 9.0.3
-      bigint-mod-arith: 3.3.1
-      conf: 11.0.2
-      multiformats: 13.3.1
-      p-defer: 4.0.1
-      type-fest: 4.34.1
-      uint8arrays: 5.1.0
-    dev: false
-
-  /@storacha/blob-index@1.0.1:
-    resolution: {integrity: sha512-0i+/OFq5/tCqZ4FQ4yTe6Icbg6V+IJ6g4ncO8YmMF9vdhu8Ue901jcByX4hrrz0EfRUR/OV5rFd379tSPtzZiA==}
-    engines: {node: '>=16.15'}
-    dependencies:
-      '@ipld/dag-cbor': 9.2.2
-      '@storacha/capabilities': 1.2.1
-      '@storacha/one-webcrypto': 1.0.1
-      '@ucanto/core': 10.2.1
-      '@ucanto/interface': 10.1.1
-      carstream: 2.3.0
-      multiformats: 13.3.1
-      uint8arrays: 5.1.0
-    dev: false
-
-  /@storacha/capabilities@1.2.1:
-    resolution: {integrity: sha512-EdmTqws2D6nug+M6+pSlUdAG4m3uGegVoyzPulM1MRjJk9GCmL8Wt0k/ursIiY1MQ6kW0jKyKXOTyG7RpYCRqQ==}
-    dependencies:
-      '@ucanto/core': 10.2.1
-      '@ucanto/interface': 10.1.1
-      '@ucanto/principal': 9.0.2
-      '@ucanto/transport': 9.1.1
-      '@ucanto/validator': 9.0.3
-      '@web3-storage/data-segment': 5.3.0
-      uint8arrays: 5.1.0
-    dev: false
-
-  /@storacha/client@1.1.4:
-    resolution: {integrity: sha512-1fVr8RBEfxSrWwb5x2pSFzGhDCpwDenCTh/ctyVNrnf/A/P9fDvgOFEzYnxNHyWR9qF7m/RfnclB1cy5PYo3Jw==}
-    engines: {node: '>=18'}
-    dependencies:
-      '@ipld/dag-ucan': 3.4.5
-      '@storacha/access': 1.0.2
-      '@storacha/blob-index': 1.0.1
-      '@storacha/capabilities': 1.2.1
-      '@storacha/did-mailto': 1.0.1
-      '@storacha/filecoin-client': 1.0.2
-      '@storacha/upload-client': 1.0.4
-      '@ucanto/client': 9.0.1
-      '@ucanto/core': 10.2.1
-      '@ucanto/interface': 10.1.1
-      '@ucanto/principal': 9.0.2
-      '@ucanto/transport': 9.1.1
-    transitivePeerDependencies:
-      - encoding
-    dev: false
-
-  /@storacha/did-mailto@1.0.1:
-    resolution: {integrity: sha512-H6LP3pWrb8J+bCEDhFM/A6KFu6vg7vqGOLCsIs9MB7t51QMIHeSdTcy/Rtx4zt0gqiyv/lDZs+lO4zmGV2zfUA==}
-    engines: {node: '>=16.15'}
-    dev: false
-
-  /@storacha/filecoin-client@1.0.2:
-    resolution: {integrity: sha512-ZFQYtlCfXtx5ibRGsjD95DBnsUiuBicb6ejSxnzpbeyxZphlmZfwZB845QGPLURMe61YIU+AodYI5WmupSYjNQ==}
-    dependencies:
-      '@ipld/dag-ucan': 3.4.5
-      '@storacha/capabilities': 1.2.1
-      '@ucanto/client': 9.0.1
-      '@ucanto/core': 10.2.1
-      '@ucanto/interface': 10.1.1
-      '@ucanto/transport': 9.1.1
-    dev: false
-
   /@storacha/one-webcrypto@1.0.1:
     resolution: {integrity: sha512-bD+vWmcgsEBqU0Dz04BR43SA03bBoLTAY29vaKasY9Oe8cb6XIP0/vkm0OS2UwKC13c8uRgFW4rjJUgDCNLejQ==}
-    dev: false
-
-  /@storacha/upload-client@1.0.4:
-    resolution: {integrity: sha512-MTh1rqs2Wggm+dArBeF2aXF3cn+6qcJay/5HxYTtK50HHFpbpyyHS0NM4HYEOYSZdiKIlYyLVnq7eUTGPTLtdQ==}
-    dependencies:
-      '@ipld/car': 5.4.0
-      '@ipld/dag-cbor': 9.2.2
-      '@ipld/dag-ucan': 3.4.5
-      '@ipld/unixfs': 3.0.0
-      '@storacha/blob-index': 1.0.1
-      '@storacha/capabilities': 1.2.1
-      '@storacha/filecoin-client': 1.0.2
-      '@ucanto/client': 9.0.1
-      '@ucanto/core': 10.2.1
-      '@ucanto/interface': 10.1.1
-      '@ucanto/transport': 9.1.1
-      '@web3-storage/data-segment': 5.3.0
-      ipfs-utils: 9.0.14
-      multiformats: 13.3.1
-      p-retry: 5.1.2
-      varint: 6.0.0
-    transitivePeerDependencies:
-      - encoding
     dev: false
 
   /@types/long@4.0.2:
@@ -1603,8 +1487,8 @@ packages:
   /@ucanto/client@9.0.1:
     resolution: {integrity: sha512-cV8w3AnaZaYCdUmyFFICj8YhFckDoy2DvWgAzGDMkPz0WbUW4lw9Tjm4hEE8x5kiP47wYej/pHKWCcoELiU0qw==}
     dependencies:
-      '@ucanto/core': 10.2.1
-      '@ucanto/interface': 10.1.1
+      '@ucanto/core': 10.0.1
+      '@ucanto/interface': 10.0.1
     dev: false
 
   /@ucanto/core@10.0.1:
@@ -1617,28 +1501,11 @@ packages:
       multiformats: 11.0.2
     dev: false
 
-  /@ucanto/core@10.2.1:
-    resolution: {integrity: sha512-tPLrQUQEbo4d+vFB7hZdbMYaFqqJwczGz3LiGZMW7uWC9g1imFryJcedeLBqiKNYdQmBY70Yuj9QFDEope6mfQ==}
-    dependencies:
-      '@ipld/car': 5.4.0
-      '@ipld/dag-cbor': 9.2.2
-      '@ipld/dag-ucan': 3.4.5
-      '@ucanto/interface': 10.1.1
-      multiformats: 13.3.1
-    dev: false
-
   /@ucanto/interface@10.0.1:
     resolution: {integrity: sha512-+Vr/N4mLsdynV9/bqtdFiq7WsUf3265/Qx2aHJmPtXo9/QvWKthJtpe0g8U4NWkWpVfqIFvyAO2db6D9zWQfQw==}
     dependencies:
       '@ipld/dag-ucan': 3.4.0
       multiformats: 11.0.2
-    dev: false
-
-  /@ucanto/interface@10.1.1:
-    resolution: {integrity: sha512-FHSA7eAN1pbJyzcMRFs9ioHlPQUpE3CfHxLGkCF9AU4HMl7G2YdgzeeOdiD3Li7Ur7EFUwEhZDoVMNKGH+7h1g==}
-    dependencies:
-      '@ipld/dag-ucan': 3.4.5
-      multiformats: 13.3.1
     dev: false
 
   /@ucanto/principal@9.0.1:
@@ -1650,18 +1517,6 @@ packages:
       '@noble/hashes': 1.7.0
       '@ucanto/interface': 10.0.1
       multiformats: 11.0.2
-      one-webcrypto: 1.0.3
-    dev: false
-
-  /@ucanto/principal@9.0.2:
-    resolution: {integrity: sha512-RE3Rj0oz4wh4C9p2JJZB9+QLd7Fi3lCixrbHgAvEoSyTNpvz6ky8DGNtttmD5j3O94z13qdVdIoSRY6DQZXfAg==}
-    dependencies:
-      '@ipld/dag-ucan': 3.4.5
-      '@noble/curves': 1.8.0
-      '@noble/ed25519': 1.7.3
-      '@noble/hashes': 1.7.0
-      '@ucanto/interface': 10.1.1
-      multiformats: 13.3.1
       one-webcrypto: 1.0.3
     dev: false
 
@@ -1677,8 +1532,8 @@ packages:
   /@ucanto/transport@9.1.1:
     resolution: {integrity: sha512-3CR17nEemOVaTuMZa6waWgVL4sLxSPcxYvpaNeJ6NZo1rfsqdyRXOtbVV/RcI2BtUL0Cao6JM6P9+gdghfc5ng==}
     dependencies:
-      '@ucanto/core': 10.2.1
-      '@ucanto/interface': 10.1.1
+      '@ucanto/core': 10.0.1
+      '@ucanto/interface': 10.0.1
     dev: false
 
   /@ucanto/validator@9.0.2:
@@ -1689,16 +1544,6 @@ packages:
       '@ucanto/core': 10.0.1
       '@ucanto/interface': 10.0.1
       multiformats: 11.0.2
-    dev: false
-
-  /@ucanto/validator@9.0.3:
-    resolution: {integrity: sha512-S3NJ2fDhdnPuepAW7OVN/ngZ9DGqhibdwnFbs7lRyCNMgVrU90eqrQLa+8FmIhjlsWeQQvc77SUVygso2eqY4A==}
-    dependencies:
-      '@ipld/car': 5.4.0
-      '@ipld/dag-cbor': 9.2.2
-      '@ucanto/core': 10.2.1
-      '@ucanto/interface': 10.1.1
-      multiformats: 13.3.1
     dev: false
 
   /@walletconnect/core@2.9.2:
@@ -2087,12 +1932,120 @@ packages:
       tslib: 1.14.1
     dev: false
 
+  /@web3-storage/access@20.1.1:
+    resolution: {integrity: sha512-W2C9sn8NTWw7zIUVzEk5MtwWQLFsOREF6Ju6VK+MYcuAkQ6yVll6Q7YtB5zLPwu29xJ7KIR6e5KzbDNSXHSfrA==}
+    dependencies:
+      '@ipld/car': 5.4.0
+      '@ipld/dag-ucan': 3.4.0
+      '@scure/bip39': 1.5.4
+      '@storacha/one-webcrypto': 1.0.1
+      '@ucanto/client': 9.0.1
+      '@ucanto/core': 10.0.1
+      '@ucanto/interface': 10.0.1
+      '@ucanto/principal': 9.0.1
+      '@ucanto/transport': 9.1.1
+      '@ucanto/validator': 9.0.2
+      '@web3-storage/capabilities': 18.0.1
+      '@web3-storage/did-mailto': 2.1.0
+      bigint-mod-arith: 3.3.1
+      conf: 11.0.2
+      multiformats: 12.1.3
+      p-defer: 4.0.1
+      type-fest: 4.34.1
+      uint8arrays: 4.0.10
+    dev: false
+
+  /@web3-storage/blob-index@1.0.5:
+    resolution: {integrity: sha512-mhzupWeRfxLljoULcagU++mOmQOriCBMKniUhsmrCXrtRV8voF7op/ymqix1f9uX1M5iB93YXcfxAVBwGWWKoA==}
+    engines: {node: '>=16.15'}
+    dependencies:
+      '@ipld/dag-cbor': 9.2.2
+      '@storacha/one-webcrypto': 1.0.1
+      '@ucanto/core': 10.0.1
+      '@ucanto/interface': 10.0.1
+      '@web3-storage/capabilities': 18.0.1
+      carstream: 2.3.0
+      multiformats: 13.3.1
+      uint8arrays: 5.1.0
+    dev: false
+
+  /@web3-storage/capabilities@18.0.1:
+    resolution: {integrity: sha512-FLAUpuuFYkLrMkXy/W7iVNQdFlqGCZUrQr30L2C05SbQdpb/4tN6jqRG+l2nvAYTaYjWTYzsYLHGy2illsuNZQ==}
+    dependencies:
+      '@ucanto/core': 10.0.1
+      '@ucanto/interface': 10.0.1
+      '@ucanto/principal': 9.0.1
+      '@ucanto/transport': 9.1.1
+      '@ucanto/validator': 9.0.2
+      '@web3-storage/data-segment': 5.3.0
+      uint8arrays: 5.1.0
+    dev: false
+
   /@web3-storage/data-segment@5.3.0:
     resolution: {integrity: sha512-zFJ4m+pEKqtKatJNsFrk/2lHeFSbkXZ6KKXjBe7/2ayA9wAar7T/unewnOcZrrZTnCWmaxKsXWqdMFy9bXK9dw==}
     dependencies:
       '@ipld/dag-cbor': 9.2.2
       multiformats: 13.3.1
       sync-multihash-sha2: 1.0.0
+    dev: false
+
+  /@web3-storage/did-mailto@2.1.0:
+    resolution: {integrity: sha512-TRmfSXj1IhtX3ESurSNOylZSBKi0z/VJNoMLpof+AVRdovgZjjocpiePQTs2pfHKqHTHfJXc9AboWyK4IKTWMw==}
+    engines: {node: '>=16.15'}
+    dev: false
+
+  /@web3-storage/filecoin-client@3.3.5:
+    resolution: {integrity: sha512-3JFKnHFizlljRSJyyCdNN3Np4MN5riBvjAXweqNmu4s2sChMB8kopnCkAFoMeEom9r7ZAnBAkMO3Wacjs6Nlcw==}
+    dependencies:
+      '@ipld/dag-ucan': 3.4.0
+      '@ucanto/client': 9.0.1
+      '@ucanto/core': 10.0.1
+      '@ucanto/interface': 10.0.1
+      '@ucanto/transport': 9.1.1
+      '@web3-storage/capabilities': 18.0.1
+    dev: false
+
+  /@web3-storage/upload-client@17.1.3:
+    resolution: {integrity: sha512-pOD5EM6RJgsJ3gRZWfhwfbD21OLvNQ239aD4D5BsQsEEgEoqR8aXdrjDWU4T8DA4YXU6VIai/VGIsDXgw+eg7g==}
+    dependencies:
+      '@ipld/car': 5.4.0
+      '@ipld/dag-cbor': 9.2.2
+      '@ipld/dag-ucan': 3.4.0
+      '@ipld/unixfs': 2.2.0
+      '@ucanto/client': 9.0.1
+      '@ucanto/core': 10.0.1
+      '@ucanto/interface': 10.0.1
+      '@ucanto/transport': 9.1.1
+      '@web3-storage/blob-index': 1.0.5
+      '@web3-storage/capabilities': 18.0.1
+      '@web3-storage/data-segment': 5.3.0
+      '@web3-storage/filecoin-client': 3.3.5
+      ipfs-utils: 9.0.14
+      multiformats: 12.1.3
+      p-retry: 5.1.2
+      varint: 6.0.0
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
+  /@web3-storage/w3up-client@17.1.2:
+    resolution: {integrity: sha512-vS6pvbIfr0iUorH7LBGm24GDBMQ4xdJRlFTlLWktfEAqzBiPE3v7lXDDF4suXl9DzjkLYK8+eSuSqb5+zru2eA==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@ipld/dag-ucan': 3.4.0
+      '@ucanto/client': 9.0.1
+      '@ucanto/core': 10.0.1
+      '@ucanto/interface': 10.0.1
+      '@ucanto/principal': 9.0.1
+      '@ucanto/transport': 9.1.1
+      '@web3-storage/access': 20.1.1
+      '@web3-storage/blob-index': 1.0.5
+      '@web3-storage/capabilities': 18.0.1
+      '@web3-storage/did-mailto': 2.1.0
+      '@web3-storage/filecoin-client': 3.3.5
+      '@web3-storage/upload-client': 17.1.3
+    transitivePeerDependencies:
+      - encoding
     dev: false
 
   /actor@2.3.1:
@@ -3293,6 +3246,11 @@ packages:
     engines: {node: '>=16.0.0', npm: '>=7.0.0'}
     dev: false
 
+  /multiformats@12.1.3:
+    resolution: {integrity: sha512-eajQ/ZH7qXZQR2AgtfpmSMizQzmyYVmCql7pdhldPuYQi4atACekbJaQplk6dWyIi10jCaFnd6pqvcEFXjbaJw==}
+    engines: {node: '>=16.0.0', npm: '>=7.0.0'}
+    dev: false
+
   /multiformats@13.3.1:
     resolution: {integrity: sha512-QxowxTNwJ3r5RMctoGA5p13w5RbRT2QDkoM+yFlqfLiioBp78nhDjnRLvmSBI9+KAqN4VdgOVWM9c0CHd86m3g==}
     dev: false
@@ -3996,6 +3954,12 @@ packages:
     resolution: {integrity: sha512-+QJa8QRnbdXVpHYjLoTpJIdCTiw9Ir62nocClWuXIq2JIh4Uta0cQsTSpFL678p2CN8B+XSApwcU+pQEqVpKWg==}
     dependencies:
       multiformats: 9.9.0
+
+  /uint8arrays@4.0.10:
+    resolution: {integrity: sha512-AnJNUGGDJAgFw/eWu/Xb9zrVKEGlwJJCaeInlf3BkecE/zcTobk5YXYIPNQJO1q5Hh1QZrQQHf0JvcHqz2hqoA==}
+    dependencies:
+      multiformats: 12.1.3
+    dev: false
 
   /uint8arrays@5.1.0:
     resolution: {integrity: sha512-vA6nFepEmlSKkMBnLBaUMVvAC4G3CTmO58C12y4sq6WPDOR7mOFYOi7GlrQ4djeSbP6JG9Pv9tJDM97PedRSww==}

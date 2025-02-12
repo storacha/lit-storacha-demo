@@ -1,16 +1,14 @@
+import * as fs from 'fs'
 import { DID } from '@ucanto/server'
-import { CarReader } from '@ipld/car'
-import * as dagJSON from '@ipld/dag-json'
-import * as Client from '@storacha/client'
+import * as Client from '@web3-storage/w3up-client'
 import * as Signer from '@ucanto/principal/ed25519' // Agents on Node should use Ed25519 keys
-import { importDAG } from '@ucanto/core/delegation'
-import { StoreMemory } from '@storacha/client/stores/memory'
+import { StoreMemory } from '@web3-storage/w3up-client/stores/memory'
 
 import env from '../env.js'
 import { encrypt } from '../encrypt.js'
+import { parseProof } from '../utils.js'
+import Decrypt from '../decrypt-capability.js'
 import { STORACHA_LIT_ACTION_CID } from '../lib.js'
-
-import { Decrypt } from '../capability.js'
 
 async function main() {
   const principal = Signer.parse(env.AGENT_PK)
@@ -42,48 +40,39 @@ async function main() {
   console.log('ℹ️  The hash of the data that was encrypted:', dataToEncryptHash)
 
   // upload
-  const blob = new Blob([ciphertext])
+  const uploadData = {
+    ciphertext,
+    dataToEncryptHash,
+    accessControlConditions,
+    spaceDID: space.did()
+  }
+  const blob = new Blob([JSON.stringify(uploadData)])
   const rootCid = await client.uploadFile(blob)
   console.log(`root cid: ${rootCid}`)
 
   // delegate
-  const audience = DID.parse('did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi')
+  const audience = DID.parse('did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi') // TODO: remove hardcoded value
 
-  // const delegationOptions = {
-  //   issuer: principal,
-  //   audience: audience,
-  //   with: space.did(),
-  //   nb: {
-  //     resource: rootCid
-  //   },
-  //   expiration: Infinity
-  // }
-
-  const ability = /** @type {"*"} */ (Decrypt.can)
-  const delegation = await client.createDelegation(audience, [ability], {
+  const delegationOptions = {
+    issuer: principal,
+    audience: audience,
+    with: space.did(),
+    nb: {
+      resource: rootCid
+    },
     expiration: Infinity,
-    // @ts-ignore
-    nb: { resource: rootCid }
-  })
-
-  // const decryptDelegation = await Decrypt.delegate(delegationOptions)
-  const { ok: bytes } = await delegation.archive()
-  const delegationJson = dagJSON.stringify(bytes) // JSON compatible
-  // write to file
-}
-
-/** @param {string} data Base64 encoded CAR file */
-async function parseProof(data) {
-  const blocks = []
-  const reader = await CarReader.fromBytes(Buffer.from(data, 'base64'))
-  for await (const block of reader.blocks()) {
-    blocks.push(block)
+    proofs: [proof]
   }
-  return importDAG(blocks)
+
+  const delegation = await Decrypt.delegate(delegationOptions)
+  const { ok: bytes } = await delegation.archive()
+
+  fs.writeFileSync('delegation.bin', Buffer.from(/** @type Uint8Array<ArrayBufferLike>**/ (bytes)))
 }
 
-try {
-  await main()
-} catch (error) {
-  console.error(error)
-}
+main()
+  .then(() => process.exit(0))
+  .catch(err => {
+    console.error(err)
+    process.exit(1)
+  })

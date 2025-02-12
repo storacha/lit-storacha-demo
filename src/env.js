@@ -10,7 +10,8 @@ const envSchema = z.object({
     .default(LIT_NETWORK.DatilTest),
   LIT_DEBUG: z.boolean().optional(),
   AGENT_PK: z.string(),
-  PROOF: z.string()
+  PROOF: z.string(),
+  WALLET_PK: z.string()
 })
 
 // validate `process.env` against our schema

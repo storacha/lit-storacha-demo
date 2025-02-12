@@ -1,3 +1,10 @@
-import { AccessControlConditions } from '@lit-protocol/types'
+import { AccessControlConditions, AuthSig } from '@lit-protocol/types'
+import { Wallet } from 'ethers'
 
-const x: AccessControlConditions
+export interface SessionSignatureOptions {
+  wallet: Wallet
+  accessControlConditions: AccessControlConditions
+  dataToEncryptHash: string
+  expiration?: string
+  capabilityAuthSigs?: AuthSig[]
+}
