@@ -70,3 +70,14 @@ Key features relevant to this demo:
 
 - [Lit Protocol Docs](https://developer.litprotocol.com/)
 - [Storacha Network Docs](https://docs.storacha.network/)
+
+
+### Delegation
+
+Encrypt: 
+1. Agent A - delegate space/decrypt -> decrypt delegation proof -> User X -> Upload
+
+Decrypt: 
+1. User X - invoke space/decrypt (+ decrypt delegation proof )-> Lit Action Authority -> Send Decrypt Request
+2. Lit Action - access(invocation) -> Decrypt
+

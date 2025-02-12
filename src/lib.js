@@ -27,4 +27,4 @@ export async function getLitContracts(wallet) {
   return contractClient
 }
 
-export const STORACHA_LIT_ACTION_CID = 'QmQFLsGAo1oJjhyEQpN6LCqKuLS1wD3kz91i5PL1ejxy5A'
+export const STORACHA_LIT_ACTION_CID = 'QmWzZBJdKZ4RvzJswt81GdPuzF6gSEgY69Y1GMRCRL3m3w'

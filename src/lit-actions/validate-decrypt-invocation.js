@@ -2,7 +2,7 @@ import { ok, Schema, DID, fail, access } from '@ucanto/validator'
 import { extract } from '@ucanto/core/delegation'
 import { Verifier } from '@ucanto/principal'
 import { capability } from '@ucanto/server'
-import * as dagJSON from '@ipld/dag-json'
+import * as DagJSON from '@ipld/dag-json'
 import { error } from '@ucanto/core/result'
 
 const decrypt = async () => {
@@ -29,23 +29,38 @@ const decrypt = async () => {
           }
         })
 
-        const value = dagJSON.parse(invocation)
-        const delegation = await extract(value)
+        const value = DagJSON.parse(invocation)
+        const delegationResult = await extract(value)
+        if (delegationResult.error) {
+          return JSON.stringify(delegationResult.error)
+        }
 
-        const decryptCapability = delegation.ok?.capabilities.find(cap => cap.can === Decrypt.can)
-
-        if (decryptCapability?.with !== spaceDID) {
+        const delegation = delegationResult.ok
+        const decryptCapability = delegation.capabilities.find(cap => cap.can === Decrypt.can)
+        if (!decryptCapability) {
           return JSON.stringify(
             error(
-              `Invalid "with" in delegation. Decryption is allowed only for files associated with spaceDID: ${spaceDID}!`
+              `Missing Decrypt capability in delegation`
             )
           )
         }
 
-        const authorization = await access(delegation.ok, {
-          principal: Verifier,
+        if (decryptCapability.with !== spaceDID) {
+          return JSON.stringify(
+            error(
+              `Decrypt capability with ${decryptCapability.with} does not match the allowed spaceDID ${spaceDID}`
+            )
+          )
+        }
+
+        /**
+         * Delegation with Decrypt capability needs to be typecasted to {*} to trick the access function
+         * because this delegation is not known/defined yet
+         */
+        const authorization = await access(/** @type {*} */(delegation), {
           capability: Decrypt,
-          authority: 'did:web:test.web3.storage',
+          authority: 'did:web:staging.web3.storage',
+          principal: Verifier,
           validateAuthorization: () => ok({}) // TODO: check if it's not revoked
         })
 

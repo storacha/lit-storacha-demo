@@ -1,17 +1,11 @@
 /**
- * Calculate this value by running the script: 'pnpm run ipfsCID'.
- */
-export const ipfsHash = 'QmQFLsGAo1oJjhyEQpN6LCqKuLS1wD3kz91i5PL1ejxy5A'
-
-/**
+ * Builds the access control conditions for the Lit Action taking the spaceDID, and the ipfsHash of the action into account.
  *
- * @typedef {`did:key:${string}`} DID
- * @type DID
+ * @param {`did:key:${string}`} spaceDID
+ * @param {string} ipfsHash
+ * @returns {import('@lit-protocol/types').AccessControlConditions}
  */
-export const spaceDID = 'did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi'
-
-/** @type import('@lit-protocol/types').AccessControlConditions */
-export const accessControlConditions = [
+export const buildAccessControlConditions = (spaceDID, ipfsHash) => [
   {
     contractAddress: '',
     standardContractType: '',

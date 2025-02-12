@@ -10,7 +10,15 @@ const envSchema = z.object({
     .default(LIT_NETWORK.DatilTest),
   LIT_DEBUG: z.boolean().optional(),
   AGENT_PK: z.string(),
-  PROOF: z.string()
+  PROOF: z.string(),
+  EMAIL_ACCOUNT: z.string(),
+  W3_SERVICE_DID: z.string(),
+  W3_STORE_NAME: z.string(),
+  W3UP_SERVICE_URL: z.string(),
+  W3UP_RECEIPTS_ENDPOINT: z.string(),
+  AUDIENCE_DID: z.string(),
+  AUDIENCE_PK: z.string(),
+  AUTHORITY_DID_WEB: z.string()
 })
 
 // validate `process.env` against our schema

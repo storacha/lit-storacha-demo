@@ -7,7 +7,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-actions": "node src/lit-actions/esbuild.js",
-    "ipfsCID": "./node_modules/.bin/ipfs-only-hash --cidVersion=0 src/lit-actions/dist/validate-decrypt-invocation.js"
+    "ipfsCID": "./node_modules/.bin/ipfs-only-hash --cidVersion=0 src/lit-actions/dist/validate-decrypt-invocation.js",
+    "encrypt": "node src/script/encrypt-and-upload.js",
+    "decrypt": "node src/script/download-and-decrypt.js"
   },
   "keywords": [],
   "author": "",
@@ -21,11 +23,12 @@
     "@lit-protocol/encryption": "^7.0.2",
     "@lit-protocol/lit-auth-client": "^7.0.3",
     "@lit-protocol/lit-node-client": "^7.0.2",
-    "@storacha/client": "^1.1.4",
+    "@storacha/client": "^1.1.5",
     "@ucanto/core": "^10.0.1",
     "@ucanto/principal": "^9.0.1",
     "@ucanto/server": "^10.0.0",
     "@ucanto/validator": "^9.0.2",
+    "@web3-storage/w3up-client": "^17.1.2",
     "dotenv": "^16.4.7",
     "ethers": "5.7.1",
     "multiformats": "^13.3.1",
@@ -37,6 +40,7 @@
     "esbuild": "^0.24.2",
     "glob": "^11.0.0",
     "ipfs-only-hash": "^4.0.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "ucan-key": "^1.0.2"
   }
 }
