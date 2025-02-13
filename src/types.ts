@@ -6,5 +6,5 @@ export interface SessionSignatureOptions {
   accessControlConditions: AccessControlConditions
   dataToEncryptHash: string
   expiration?: string
-  capabilityAuthSigs?: AuthSig[]
+  capabilityAuthSigs?: AuthSig[] // Required if the capacity credit is delegated to the decrypting user
 }

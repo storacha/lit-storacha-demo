@@ -12,6 +12,11 @@ import { getSessionSigs } from '../getSessionSig.js'
 import { getLit, STORACHA_LIT_ACTION_CID } from '../lib.js'
 import { getCapacityCredits } from '../get-capacity-credits.js'
 
+/**
+ * rootCid - The CID of the encrypted data file uploaded to Storacha.
+ * delegationFilePath - Path to the delegation CAR file
+ * capacityTokenId - If you already have a capacity credit token ID (optional)
+ */
 async function main() {
   const rootCid = process.argv[2]
   const delegationFilePath = process.argv[3]
@@ -37,25 +42,13 @@ async function main() {
     console.log(`ℹ️  Using provided Capacity Credit with ID: ${capacityTokenId}`)
   }
 
-  // ========== GETTING AUTH SIG ===========
-  // TODO: test without this
-  console.log('🔄 Creating capacityDelegationAuthSig...')
-  const { capacityDelegationAuthSig } = await litNodeClient.createCapacityDelegationAuthSig({
-    dAppOwnerWallet: controllerWallet,
-    capacityTokenId,
-    delegateeAddresses: [controllerWallet.address],
-    uses: '1'
-  })
-  console.log('✅ Capacity Delegation Auth Sig created')
-
   // ========== SESSION SIGNATURES  ===========
   // TODO: store the session signature (https://developer.litprotocol.com/intro/first-request/generating-session-sigs#nodejs)
   const sessionSigs = await getSessionSigs({
     wallet: controllerWallet,
     accessControlConditions,
     dataToEncryptHash,
-    expiration: new Date(Date.now() + 1000 * 60 * 5).toISOString(), // 5 min
-    capabilityAuthSigs: [capacityDelegationAuthSig]
+    expiration: new Date(Date.now() + 1000 * 60 * 5).toISOString() // 5 min
   })
 
   // ==========  EXECUTE LIT ACTION TO DECRYPT ===========
@@ -91,7 +84,7 @@ async function main() {
         - Can not derive {"can":"space/content/decrypt","with":"did:key:z6MktfnQz8Kcz5nsC65oyXWFXhbbAZQavjg6LYuHgv4YbxzN","nb":{"resource":{"/":"bafkreieij7duquyio4qwbmc6kpbrzsk32njjfc6iaknolywyw4xyy5lbh4"}}} from delegated capabilities:
           - Constraint violation: Can not derive space/content/decrypt with bafkreieij7duquyio4qwbmc6kpbrzsk32njjfc6iaknolywyw4xyy5lbh4 from bafkreieij7duquyio4qwbmc6kpbrzsk32njjfc6iaknolywyw4xyy5lbh4"
    */
-  const { ok: bytes } = await decryptInvocation.archive()
+  // const { ok: bytes } = await decryptInvocation.archive()
   // const invocation = dagJSON.stringify(bytes)
 
   const invocation = dagJSON.stringify(new Uint8Array(carEncoded))
