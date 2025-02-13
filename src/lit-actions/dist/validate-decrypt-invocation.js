@@ -5452,7 +5452,7 @@
     throw new Error(`Block for the ${link4} is not found`);
   };
 
-  // node_modules/.pnpm/@ipld+car@5.3.3/node_modules/@ipld/car/src/decoder-common.js
+  // node_modules/.pnpm/@ipld+car@5.4.0/node_modules/@ipld/car/src/decoder-common.js
   var import_varint3 = __toESM(require_varint(), 1);
   var CIDV0_BYTES = {
     SHA2_256: 18,
@@ -5505,7 +5505,7 @@
     return mhLength;
   }
 
-  // node_modules/.pnpm/@ipld+car@5.3.3/node_modules/@ipld/car/src/header-validator.js
+  // node_modules/.pnpm/@ipld+car@5.4.0/node_modules/@ipld/car/src/header-validator.js
   var Kinds = {
     Null: (
       /** @returns {undefined|null} */
@@ -5727,7 +5727,7 @@
     toRepresentation: Reprs.CarV1HeaderOrV2Pragma
   };
 
-  // node_modules/.pnpm/@ipld+car@5.3.3/node_modules/@ipld/car/src/buffer-decoder.js
+  // node_modules/.pnpm/@ipld+car@5.4.0/node_modules/@ipld/car/src/buffer-decoder.js
   function readHeader(reader, strictVersion) {
     const length3 = decodeVarint(reader.upTo(8), reader);
     if (length3 === 0) {
@@ -5853,7 +5853,7 @@
     };
   }
 
-  // node_modules/.pnpm/@ipld+car@5.3.3/node_modules/@ipld/car/src/buffer-reader-browser.js
+  // node_modules/.pnpm/@ipld+car@5.4.0/node_modules/@ipld/car/src/buffer-reader-browser.js
   var CarBufferReader = class _CarBufferReader {
     /**
      * @constructs CarBufferReader
@@ -5980,7 +5980,7 @@
     }
   }
 
-  // node_modules/.pnpm/@ipld+car@5.3.3/node_modules/@ipld/car/src/buffer-writer.js
+  // node_modules/.pnpm/@ipld+car@5.4.0/node_modules/@ipld/car/src/buffer-writer.js
   var import_varint4 = __toESM(require_varint(), 1);
   var CarBufferWriter = class {
     /**
@@ -11148,7 +11148,7 @@ ${unknown2.join("\n")}`)] : []
           const authorization = await access(delegation.ok, {
             principal: Verifier,
             capability: Decrypt,
-            authority: "did:web:test.web3.storage",
+            authority: "did:web:web3.storage",
             validateAuthorization: () => ok({})
             // TODO: check if it's not revoked
           });

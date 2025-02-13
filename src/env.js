@@ -10,8 +10,12 @@ const envSchema = z.object({
     .default(LIT_NETWORK.DatilTest),
   LIT_DEBUG: z.boolean().optional(),
   AGENT_PK: z.string(),
+  DELEGATEE_AGENT_PK: z.string(),
   PROOF: z.string(),
-  WALLET_PK: z.string()
+  WALLET_PK: z.string(),
+  AUTHORITY_DID_WEB: z.string().refine(val => /^did:[^:]+:[^:]+$/.test(val), {
+    message: "AUTHORITY_DID_WEB must be in the format 'did:{string}:{string}'"
+  })
 })
 
 // validate `process.env` against our schema

@@ -45,7 +45,7 @@ const decrypt = async () => {
         const authorization = await access(delegation.ok, {
           principal: Verifier,
           capability: Decrypt,
-          authority: 'did:web:test.web3.storage',
+          authority: 'did:web:web3.storage',
           validateAuthorization: () => ok({}) // TODO: check if it's not revoked
         })
 

@@ -2,6 +2,8 @@ import { LitNodeClient } from '@lit-protocol/lit-node-client'
 import { LitContracts } from '@lit-protocol/contracts-sdk'
 import env from './env.js'
 
+export const STORACHA_LIT_ACTION_CID = 'QmRGzM3MUHoMMWynEH5BxNTaZsKCeVphYQTiCLNHTyfWzX'
+
 export async function getLit() {
   const litNodeClient = new LitNodeClient({
     litNetwork: env.LIT_NETWORK,
@@ -26,5 +28,3 @@ export async function getLitContracts(wallet) {
   await contractClient.connect()
   return contractClient
 }
-
-export const STORACHA_LIT_ACTION_CID = 'QmQFLsGAo1oJjhyEQpN6LCqKuLS1wD3kz91i5PL1ejxy5A'

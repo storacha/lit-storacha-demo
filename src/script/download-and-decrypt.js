@@ -1,11 +1,16 @@
 import * as fs from 'fs'
 import { ethers } from 'ethers'
+import { CID } from 'multiformats'
+import { DID } from '@ucanto/server'
 import * as dagJSON from '@ipld/dag-json'
+import { Signer } from '@ucanto/principal/ed25519'
+import { extract } from '@ucanto/core/delegation'
 
 import env from '../env.js'
+import Decrypt from '../decrypt-capability.js'
+import { getSessionSigs } from '../getSessionSig.js'
 import { getLit, STORACHA_LIT_ACTION_CID } from '../lib.js'
-import { getCapacityCredits } from 'src/get-capacity-credits.js'
-import { getSessionSigs } from 'src/getSessionSig.js'
+import { getCapacityCredits } from '../get-capacity-credits.js'
 
 async function main() {
   const rootCid = process.argv[2]
@@ -57,8 +62,39 @@ async function main() {
 
   console.log('🔄 Setting UCAN delegation...')
   // read bytes from delegation file
-  const buffer = fs.readFileSync(delegationFilePath)
-  const delegationJson = dagJSON.stringify(new Uint8Array(buffer))
+  const carEncoded = fs.readFileSync(delegationFilePath)
+
+  const delegation = /** @type {Signer.Delegation<Signer.Capabilities>} */ (
+    (await extract(/** @type {Uint8Array<ArrayBufferLike>} */ (carEncoded))).ok
+  )
+
+  const decryptSigner = Signer.parse(env.DELEGATEE_AGENT_PK)
+  console.log('Issuer:', decryptSigner.did())
+
+  const invocationOptions = {
+    issuer: decryptSigner,
+    audience: DID.parse(env.AUTHORITY_DID_WEB),
+    with: spaceDID,
+    nb: {
+      resource: CID.parse(rootCid)
+    },
+    expiration: Infinity,
+    proofs: [delegation]
+  }
+
+  const decryptInvocation = await Decrypt.invoke(invocationOptions).delegate()
+  /**
+   * This is not working. Error:
+    "Claim {"can":"space/content/decrypt"} is not authorized
+      - Capability {"can":"space/content/decrypt","with":"did:key:z6MktfnQz8Kcz5nsC65oyXWFXhbbAZQavjg6LYuHgv4YbxzN","nb":{"resource":{"/":"bafkreieij7duquyio4qwbmc6kpbrzsk32njjfc6iaknolywyw4xyy5lbh4"}}} is not authorized because:
+        - Capability can not be (self) issued by 'did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi'
+        - Can not derive {"can":"space/content/decrypt","with":"did:key:z6MktfnQz8Kcz5nsC65oyXWFXhbbAZQavjg6LYuHgv4YbxzN","nb":{"resource":{"/":"bafkreieij7duquyio4qwbmc6kpbrzsk32njjfc6iaknolywyw4xyy5lbh4"}}} from delegated capabilities:
+          - Constraint violation: Can not derive space/content/decrypt with bafkreieij7duquyio4qwbmc6kpbrzsk32njjfc6iaknolywyw4xyy5lbh4 from bafkreieij7duquyio4qwbmc6kpbrzsk32njjfc6iaknolywyw4xyy5lbh4"
+   */
+  const { ok: bytes } = await decryptInvocation.archive()
+  // const invocation = dagJSON.stringify(bytes)
+
+  const invocation = dagJSON.stringify(new Uint8Array(carEncoded))
 
   console.log('🔄 Executing Lit Action to validate UCAN and decrypt the file...')
 
@@ -70,7 +106,7 @@ async function main() {
       ciphertext,
       dataToEncryptHash,
       accessControlConditions,
-      invocation: delegationJson
+      invocation
     }
   })
 

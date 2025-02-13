@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import { DID } from '@ucanto/server'
 import * as Client from '@web3-storage/w3up-client'
-import * as Signer from '@ucanto/principal/ed25519' // Agents on Node should use Ed25519 keys
+import * as Signer from '@ucanto/principal/ed25519'
 import { StoreMemory } from '@web3-storage/w3up-client/stores/memory'
 
 import env from '../env.js'
@@ -11,6 +11,9 @@ import Decrypt from '../decrypt-capability.js'
 import { STORACHA_LIT_ACTION_CID } from '../lib.js'
 
 async function main() {
+  const filePath = process.argv[2]
+  const audienceDid = process.argv[3]
+
   const principal = Signer.parse(env.AGENT_PK)
   const store = new StoreMemory()
   const client = await Client.create({ principal, store })
@@ -21,7 +24,6 @@ async function main() {
   await client.setCurrentSpace(space.did())
 
   // encrypt
-  const filePath = './testFile.md'
   /** @type import('@lit-protocol/types').AccessControlConditions */
   const accessControlConditions = [
     {
@@ -43,15 +45,14 @@ async function main() {
   const uploadData = {
     ciphertext,
     dataToEncryptHash,
-    accessControlConditions,
-    spaceDID: space.did()
+    accessControlConditions
   }
   const blob = new Blob([JSON.stringify(uploadData)])
   const rootCid = await client.uploadFile(blob)
   console.log(`root cid: ${rootCid}`)
 
   // delegate
-  const audience = DID.parse('did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi') // TODO: remove hardcoded value
+  const audience = DID.parse(audienceDid)
 
   const delegationOptions = {
     issuer: principal,
@@ -67,7 +68,7 @@ async function main() {
   const delegation = await Decrypt.delegate(delegationOptions)
   const { ok: bytes } = await delegation.archive()
 
-  fs.writeFileSync('delegation.bin', Buffer.from(/** @type Uint8Array<ArrayBufferLike>**/ (bytes)))
+  fs.writeFileSync('delegation.car', Buffer.from(/** @type Uint8Array<ArrayBufferLike>**/ (bytes)))
 }
 
 main()
