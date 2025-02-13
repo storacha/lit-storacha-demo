@@ -8,9 +8,7 @@ import { extract } from '@ucanto/core/delegation'
 
 import env from '../env.js'
 import Decrypt from '../decrypt-capability.js'
-import { getSessionSigs } from '../getSessionSig.js'
-import { getLit, STORACHA_LIT_ACTION_CID } from '../lib.js'
-import { getCapacityCredits } from '../get-capacity-credits.js'
+import { getLit, getSessionSigs, getCapacityCredits } from '../lib.js'
 
 /**
  * rootCid - The CID of the encrypted data file uploaded to Storacha.
@@ -93,7 +91,7 @@ async function main() {
 
   const litActionResponse = await litNodeClient.executeJs({
     sessionSigs,
-    ipfsId: STORACHA_LIT_ACTION_CID,
+    ipfsId: env.STORACHA_LIT_ACTION_CID,
     jsParams: {
       spaceDID,
       ciphertext,

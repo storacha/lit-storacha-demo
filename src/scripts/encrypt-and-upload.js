@@ -3,9 +3,8 @@ import * as Signer from '@ucanto/principal/ed25519'
 import { StoreMemory } from '@web3-storage/w3up-client/stores/memory'
 
 import env from '../env.js'
-import { encrypt } from '../encrypt.js'
+import { encrypt } from '../lib.js'
 import { parseProof } from '../utils.js'
-import { STORACHA_LIT_ACTION_CID } from '../lib.js'
 
 async function main() {
   const filePath = process.argv[2]
@@ -31,7 +30,7 @@ async function main() {
       parameters: [':currentActionIpfsId', space.did()],
       returnValueTest: {
         comparator: '=',
-        value: STORACHA_LIT_ACTION_CID
+        value: env.STORACHA_LIT_ACTION_CID
       }
     }
   ]
