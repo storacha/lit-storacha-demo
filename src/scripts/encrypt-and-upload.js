@@ -35,6 +35,7 @@ async function main() {
     }
   ]
   const { ciphertext, dataToEncryptHash } = await encrypt(filePath, accessControlConditions)
+  console.log(`✅ Encrypted file!`)
 
   // upload to storacha
   const uploadData = {
@@ -43,6 +44,7 @@ async function main() {
     accessControlConditions
   }
   const blob = new Blob([JSON.stringify(uploadData)])
+  console.log('🔄 Uploading to Storacha...')
   const rootCid = await client.uploadFile(blob)
   console.log(`✅ root cid: ${rootCid}`)
 }

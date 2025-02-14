@@ -16,7 +16,7 @@ const envSchema = z.object({
   AUTHORITY_DID_WEB: z.string().refine(val => /^did:[^:]+:[^:]+$/.test(val), {
     message: "AUTHORITY_DID_WEB must be in the format 'did:{string}:{string}'"
   }),
-  STORACHA_LIT_ACTION_CID: z.string().default('QmRGzM3MUHoMMWynEH5BxNTaZsKCeVphYQTiCLNHTyfWzX')
+  STORACHA_LIT_ACTION_CID: z.string().default('QmPFrQGo5RAtdSTZ4bkaeDHVGrmy2TeEUwTu4LuVAPHiMd')
 })
 
 // validate `process.env` against our schema

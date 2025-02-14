@@ -11,6 +11,36 @@ import Decrypt from '../decrypt-capability.js'
 import { getLit, getSessionSigs, getCapacityCredits } from '../lib.js'
 
 /**
+ *
+ * @param {Buffer<ArrayBufferLike>} delegationCarBuffer
+ * @param {import('../types.js').DecryptInvocationArgs} param1
+ */
+async function createDecryptWrappedInvocation(
+  delegationCarBuffer,
+  { issuer, audienceDid, spaceDid, resourceCid, expiration }
+) {
+  const delegation = /** @type {Signer.Delegation<Signer.Capabilities>} */ (
+    (await extract(delegationCarBuffer)).ok
+  )
+
+  const invocationOptions = {
+    issuer,
+    audience: DID.parse(audienceDid),
+    with: spaceDid,
+    nb: {
+      resource: CID.parse(resourceCid)
+    },
+    expiration: expiration,
+    proofs: [delegation]
+  }
+
+  const decryptWrappedInvocation = await Decrypt.invoke(invocationOptions).delegate()
+
+  const { ok: carEncoded } = await decryptWrappedInvocation.archive()
+  return dagJSON.stringify(carEncoded)
+}
+
+/**
  * rootCid - The CID of the encrypted data file uploaded to Storacha.
  * delegationFilePath - Path to the delegation CAR file
  * capacityTokenId - If you already have a capacity credit token ID (optional)
@@ -18,6 +48,7 @@ import { getLit, getSessionSigs, getCapacityCredits } from '../lib.js'
 async function main() {
   const rootCid = process.argv[2]
   const delegationFilePath = process.argv[3]
+  /**@type {string | null} */
   let capacityTokenId = process.argv[4]
 
   const response = await fetch(`https://${rootCid}.ipfs.w3s.link`)
@@ -36,6 +67,7 @@ async function main() {
   if (!capacityTokenId) {
     console.log('🔄 No Capacity Credit provided, minting a new one...')
     capacityTokenId = await getCapacityCredits(controllerWallet, env.LIT_NETWORK)
+    console.log(`✅ Minted new Capacity Credit with ID: ${capacityTokenId}`)
   } else {
     console.log(`ℹ️  Using provided Capacity Credit with ID: ${capacityTokenId}`)
   }
@@ -46,46 +78,25 @@ async function main() {
     wallet: controllerWallet,
     accessControlConditions,
     dataToEncryptHash,
-    expiration: new Date(Date.now() + 1000 * 60 * 5).toISOString() // 5 min
+    expiration: new Date(Date.now() + 1000 * 60 * 5).toISOString() // 5 min,
   })
 
   // ==========  EXECUTE LIT ACTION TO DECRYPT ===========
 
   console.log('🔄 Setting UCAN delegation...')
   // read bytes from delegation file
-  const carEncoded = fs.readFileSync(delegationFilePath)
-
-  const delegation = /** @type {Signer.Delegation<Signer.Capabilities>} */ (
-    (await extract(/** @type {Uint8Array<ArrayBufferLike>} */ (carEncoded))).ok
-  )
+  const delegationCarBuffer = fs.readFileSync(delegationFilePath)
 
   const decryptSigner = Signer.parse(env.DELEGATEE_AGENT_PK)
   console.log('Issuer:', decryptSigner.did())
 
-  const invocationOptions = {
+  const invocation = await createDecryptWrappedInvocation(delegationCarBuffer, {
     issuer: decryptSigner,
-    audience: DID.parse(env.AUTHORITY_DID_WEB),
-    with: spaceDID,
-    nb: {
-      resource: CID.parse(rootCid)
-    },
-    expiration: Infinity,
-    proofs: [delegation]
-  }
-
-  const decryptInvocation = await Decrypt.invoke(invocationOptions).delegate()
-  /**
-   * This is not working. Error:
-    "Claim {"can":"space/content/decrypt"} is not authorized
-      - Capability {"can":"space/content/decrypt","with":"did:key:z6MktfnQz8Kcz5nsC65oyXWFXhbbAZQavjg6LYuHgv4YbxzN","nb":{"resource":{"/":"bafkreieij7duquyio4qwbmc6kpbrzsk32njjfc6iaknolywyw4xyy5lbh4"}}} is not authorized because:
-        - Capability can not be (self) issued by 'did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi'
-        - Can not derive {"can":"space/content/decrypt","with":"did:key:z6MktfnQz8Kcz5nsC65oyXWFXhbbAZQavjg6LYuHgv4YbxzN","nb":{"resource":{"/":"bafkreieij7duquyio4qwbmc6kpbrzsk32njjfc6iaknolywyw4xyy5lbh4"}}} from delegated capabilities:
-          - Constraint violation: Can not derive space/content/decrypt with bafkreieij7duquyio4qwbmc6kpbrzsk32njjfc6iaknolywyw4xyy5lbh4 from bafkreieij7duquyio4qwbmc6kpbrzsk32njjfc6iaknolywyw4xyy5lbh4"
-   */
-  // const { ok: bytes } = await decryptInvocation.archive()
-  // const invocation = dagJSON.stringify(bytes)
-
-  const invocation = dagJSON.stringify(new Uint8Array(carEncoded))
+    audienceDid: env.AUTHORITY_DID_WEB,
+    spaceDid: spaceDID,
+    resourceCid: rootCid,
+    expiration: new Date(Date.now() + 1000 * 60 * 10).getTime() // 10 min
+  })
 
   console.log('🔄 Executing Lit Action to validate UCAN and decrypt the file...')
 

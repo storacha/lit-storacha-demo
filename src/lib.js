@@ -1,7 +1,7 @@
 import { Blob } from 'buffer'
 import { ethers } from 'ethers'
 import { promises as fs } from 'fs'
-import { LIT_ABILITY, LIT_CHAINS, LIT_NETWORK } from '@lit-protocol/constants'
+import { LIT_ABILITY, LIT_NETWORK, LIT_RPC } from '@lit-protocol/constants'
 import { encryptFile } from '@lit-protocol/encryption'
 import { LitNodeClient } from '@lit-protocol/lit-node-client'
 import { LitContracts } from '@lit-protocol/contracts-sdk'
@@ -55,8 +55,8 @@ export async function encrypt(filePath, accessControlConditions, chain = 'ethere
 }
 
 const litNetworkToChainRpc = {
-  [LIT_NETWORK.DatilTest]: LIT_CHAINS.yellowstoneChain.rpcUrls[0],
-  [LIT_NETWORK.Datil]: LIT_CHAINS.yellowstoneChain.rpcUrls[0], // Note: At the moment the URL is the same, but they may update in the future
+  [LIT_NETWORK.DatilTest]: LIT_RPC.CHRONICLE_YELLOWSTONE,
+  [LIT_NETWORK.Datil]: LIT_RPC.CHRONICLE_YELLOWSTONE, // Note: At the moment the URL is the same, but they may update in the future
   [LIT_NETWORK.DatilDev]: '',
   [LIT_NETWORK.Custom]: ''
 }
@@ -84,7 +84,6 @@ export async function getCapacityCredits(wallet, network, options) {
   }
 
   const capacityTokenId = (await contractClient.mintCapacityCreditsNFT(arg)).capacityTokenIdStr
-  console.log(`✅ Minted new Capacity Credit with ID: ${capacityTokenId}`)
 
   return capacityTokenId
 }

@@ -11,9 +11,9 @@ const Decrypt = capability({
     if (child.with !== parent.with) {
       return fail(`Can not derive ${child.can} with ${child.with} from ${parent.with}`)
     }
-    if (child.nb.resource !== parent.nb.resource) {
+    if (child.nb.resource.toString() !== parent.nb.resource.toString()) {
       return fail(
-        `Can not derive ${child.can} with ${child.nb.resource} from ${parent.nb.resource}`
+        `Can not derive ${child.can} resource ${child.nb.resource} from ${parent.nb.resource}`
       )
     }
     return ok({})

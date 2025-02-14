@@ -28,7 +28,7 @@ async function main() {
     nb: {
       resource: CID.parse(rootCid)
     },
-    expiration: Infinity,
+    expiration: new Date(Date.now() + 1000 * 60 * 10).getTime(), // 10 min,
     proofs: [proof]
   }
 
