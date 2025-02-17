@@ -1,21 +1,24 @@
 import * as fs from 'fs'
 import { ethers } from 'ethers'
+import { Readable } from 'stream'
 import { Signer } from '@ucanto/principal/ed25519'
 
 import env from '../env.js'
-import { getLit, getSessionSigs, getCapacityCredits } from '../lib.js'
+import { getLit, getSessionSigs, getCapacityCredits, decryptWithKeyTo } from '../lib.js'
 import { createDecryptWrappedInvocation } from '../decrypt-capability.js'
 
 /**
  * rootCid - The CID of the encrypted data file uploaded to Storacha.
  * delegationFilePath - Path to the delegation CAR file
+ * outputPath - output file to write the decrypted content
  * capacityTokenId - If you already have a capacity credit token ID (optional)
  */
 async function main() {
   const rootCid = process.argv[2]
   const delegationFilePath = process.argv[3]
+  const outputPath = process.argv[4]
   /**@type {string | null} */
-  let capacityTokenId = process.argv[4]
+  let capacityTokenId = process.argv[5]
 
   const response = await fetch(`https://${rootCid}.ipfs.w3s.link`)
   if (!response.ok) {
@@ -24,7 +27,14 @@ async function main() {
 
   let encryptedContent = await response.text()
   console.log('Encrypted content retrieved successfully:', encryptedContent)
-  const { ciphertext, dataToEncryptHash, accessControlConditions } = JSON.parse(encryptedContent)
+  const { encryptedDataCid, ciphertext, dataToEncryptHash, accessControlConditions } =
+    JSON.parse(encryptedContent)
+
+  const encryptedDataResponse = await fetch(`https://${encryptedDataCid}.ipfs.w3s.link`)
+  if (!encryptedDataResponse.ok || !encryptedDataResponse.body) {
+    throw new Error(`Failed to fetch encrypted data: ${response.status} ${response.statusText}`)
+  }
+
   const spaceDID = accessControlConditions[0].parameters[1]
 
   const litNodeClient = await getLit()
@@ -77,12 +87,22 @@ async function main() {
       invocation
     }
   })
-
-  if (litActionResponse.response !== '') {
-    litActionResponse.response = JSON.parse(/** @type string*/ (litActionResponse.response))
-  }
-  console.log('✅ Executed the Lit Action')
   console.log(litActionResponse)
+  console.log('✅ Executed the Lit Action')
+
+  if (!litActionResponse.response) {
+    throw new Error('Error getting lit action response.')
+  }
+  const parsedResponse = JSON.parse(/** @type string*/ (litActionResponse.response))
+  const decryptedData = parsedResponse.decryptedString
+  if (!decryptedData) {
+    throw new Error('Decrypted data does not exist!')
+  }
+
+  const readStream = Readable.fromWeb(
+    /** @type {import("stream/web").ReadableStream<any>}**/ (encryptedDataResponse.body)
+  )
+  await decryptWithKeyTo(decryptedData, readStream, outputPath)
 }
 
 main()
