@@ -1,10 +1,12 @@
-import { Blob } from 'buffer'
+import * as fs from 'fs'
 import { ethers } from 'ethers'
-import { promises as fs } from 'fs'
-import { LIT_ABILITY, LIT_NETWORK, LIT_RPC } from '@lit-protocol/constants'
-import { encryptFile } from '@lit-protocol/encryption'
-import { LitNodeClient } from '@lit-protocol/lit-node-client'
+import { Readable } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
 import { LitContracts } from '@lit-protocol/contracts-sdk'
+import { LitNodeClient } from '@lit-protocol/lit-node-client'
+import { encryptFile, encryptString } from '@lit-protocol/encryption'
+import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
+import { LIT_ABILITY, LIT_NETWORK, LIT_RPC } from '@lit-protocol/constants'
 import {
   generateAuthSig,
   LitActionResource,
@@ -13,6 +15,8 @@ import {
 } from '@lit-protocol/auth-helpers'
 
 import env from './env.js'
+
+const ENCRYPTION_ALGORITHM = 'aes-256-cbc'
 
 export async function getLit() {
   const litNodeClient = new LitNodeClient({
@@ -47,11 +51,76 @@ export async function getLitContracts(wallet) {
  */
 export async function encrypt(filePath, accessControlConditions, chain = 'ethereum') {
   const litClient = await getLit()
+  const fileContent = await fs.promises.readFile(filePath)
+  const blob = new Blob([fileContent])
+  return await encryptFile({ file: blob, accessControlConditions, chain }, litClient)
+}
 
-  const fileContent = await fs.readFile(filePath)
-  let blob = new Blob([fileContent])
+/**
+ *
+ * @param {string} filePath
+ * @param {import('@lit-protocol/types').AccessControlConditions} accessControlConditions
+ */
+export async function encryptLargeFile(filePath, accessControlConditions) {
+  const stat = await fs.promises.stat(filePath)
 
-  return encryptFile({ file: blob, accessControlConditions, chain }, litClient)
+  // Generate a random symmetric key and initialization vector
+  const symmetricKey = randomBytes(32) // 256 bits for AES-256
+  const initializationVector = randomBytes(16) // 16 bytes for AES
+  // Combine key and initializationVector for Lit encryption
+  const dataToEncrypt = Buffer.concat([symmetricKey, initializationVector]).toString('base64')
+  const chunkSize = 64 * 1024 // 64KB chunks
+
+  // createEncryptedStream
+  const cipher = createCipheriv(ENCRYPTION_ALGORITHM, symmetricKey, initializationVector)
+  const fileStream = fs.createReadStream(filePath, { highWaterMark: chunkSize }) // Read from local file
+  const encryptedStream = fileStream.pipe(cipher) // Encrypt the stream
+
+  const litClient = await getLit()
+  const { ciphertext, dataToEncryptHash } = await encryptString(
+    {
+      dataToEncrypt,
+      accessControlConditions
+    },
+    litClient
+  )
+
+  return {
+    ciphertext,
+    dataToEncryptHash,
+    encryptedBlobLike: {
+      name: filePath,
+      stream: () =>
+        /** @type {ReadableStream} */
+        (Readable.toWeb(encryptedStream)),
+      size: stat.size
+    } // Convert to Web ReadableStream
+  }
+}
+
+/**
+ *
+ * @param {string} combinedKey
+ * @param {Readable} content
+ * @param {string} fileName
+ */
+export async function decryptWithKeyTo(combinedKey, content, fileName) {
+  // Split the decrypted data back into key and initializationVector
+  const decryptedKeyData = Buffer.from(combinedKey, 'base64')
+  const symmetricKey = decryptedKeyData.subarray(0, 32)
+  const initializationVector = decryptedKeyData.subarray(32)
+
+  const decipher = createDecipheriv(ENCRYPTION_ALGORITHM, symmetricKey, initializationVector)
+
+  // Create a Writable stream for the decrypted output
+  const writeStream = fs.createWriteStream(fileName)
+
+  try {
+    await pipeline(content, decipher, writeStream)
+    console.log('File successfully decrypted')
+  } catch (err) {
+    console.error('Pipeline failed', err)
+  }
 }
 
 const litNetworkToChainRpc = {
