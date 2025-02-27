@@ -189,7 +189,7 @@ export async function getSessionSigs({
         ability: LIT_ABILITY.AccessControlConditionDecryption
       },
       {
-        resource: new LitActionResource('*'),
+        resource: new LitActionResource(env.STORACHA_LIT_ACTION_CID),
         ability: LIT_ABILITY.LitActionExecution
       }
     ],
