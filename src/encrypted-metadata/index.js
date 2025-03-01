@@ -6,7 +6,7 @@ import { CAR, ok, error, Schema } from '@ucanto/core'
 
 import * as Types from './types.js'
 import { UnknownFormat } from './errors.js'
-import { stringToBytes, matchesSchema } from './utils.js'
+import { stringToBytes, matchesSchema, bytesToString } from './utils.js'
 
 export const version = 'encrypted/metadata@0.1'
 
@@ -83,7 +83,19 @@ class EncryptedMetadata {
     }
     return archive(input)
   }
+
+  toJSON() {
+    return toJSON(this)
+  }
 }
+
+/** @param {Types.EncryptedMetadataView} encryptedMetadata*/
+export const toJSON = encryptedMetadata => ({
+  encryptedDataCID: encryptedMetadata.encryptedDataCID.toString(),
+  cypherText: bytesToString(encryptedMetadata.cypherText),
+  dataToEncryptHash: bytesToString(encryptedMetadata.dataToEncryptHash),
+  accessControlConditions: encryptedMetadata.accessControlConditions
+})
 
 /**
  * @param {Types.EncryptedMetadataInput} encryptedMetadataInput

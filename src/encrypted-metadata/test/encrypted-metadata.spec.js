@@ -39,9 +39,11 @@ describe('Encrypted Metadata', () => {
 
     const extractedData = Result.unwrap((extract(car)))
 
-    assert.equal(bytesToString(extractedData.cypherText), encryptedMetadataInput.cypherText)
-    assert.equal(bytesToString(extractedData.dataToEncryptHash), encryptedMetadataInput.dataToEncryptHash)
-    assert.equal(extractedData.encryptedDataCID.toString(), encryptedMetadataInput.encryptedDataCID)
+    const extractedDataJson = extractedData.toJSON()
+
+    assert.equal(extractedDataJson.cypherText, encryptedMetadataInput.cypherText)
+    assert.equal(extractedDataJson.dataToEncryptHash, encryptedMetadataInput.dataToEncryptHash)
+    assert.equal(extractedDataJson.encryptedDataCID, encryptedMetadataInput.encryptedDataCID)
     assert.deepEqual(extractedData.accessControlConditions, encryptedMetadataInput.accessControlConditions)
   })
 })

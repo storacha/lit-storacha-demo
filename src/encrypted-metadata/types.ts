@@ -22,6 +22,7 @@ export interface EncryptedMetadata {
 export interface EncryptedMetadataView extends EncryptedMetadata {
   /** Encode it to a CAR file. */
   archive(): Promise<Result<Uint8Array>>
+  toJSON(): EncryptedMetadataInput
 }
 
 export interface DecodeFailure extends Failure {

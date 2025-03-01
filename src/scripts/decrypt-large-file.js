@@ -6,6 +6,7 @@ import { Signer } from '@ucanto/principal/ed25519'
 import env from '../env.js'
 import { getLit, getSessionSigs, getCapacityCredits, decryptWithKeyTo } from '../lib.js'
 import { createDecryptWrappedInvocation } from '../decrypt-capability.js'
+import * as EncryptedMetadata from 'src/encrypted-metadata/index.js'
 
 /**
  * rootCid - The CID of the encrypted data file uploaded to Storacha.
@@ -20,17 +21,24 @@ async function main() {
   /**@type {string | null} */
   let capacityTokenId = process.argv[5]
 
+  console.log(`Fetching encrypted metadata...`)
   const response = await fetch(`https://${rootCid}.ipfs.w3s.link`)
   if (!response.ok) {
     throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`)
   }
+  console.log('Encrypted content retrieved successfully')
 
-  let encryptedContent = await response.text()
-  console.log('Encrypted content retrieved successfully:', encryptedContent)
-  const { encryptedDataCid, ciphertext, dataToEncryptHash, accessControlConditions } =
-    JSON.parse(encryptedContent)
+  const encryptedContentCar = new Uint8Array(await response.arrayBuffer())
+  const encryptedContentResult = EncryptedMetadata.extract(encryptedContentCar)
+  if (encryptedContentResult.error) {
+    throw encryptedContentResult.error
+  }
 
-  const encryptedDataResponse = await fetch(`https://${encryptedDataCid}.ipfs.w3s.link`)
+  let encryptedContent = encryptedContentResult.ok.toJSON()
+  const { encryptedDataCID, cypherText, dataToEncryptHash, accessControlConditions } =
+    encryptedContent
+
+  const encryptedDataResponse = await fetch(`https://${encryptedDataCID}.ipfs.w3s.link`)
   if (!encryptedDataResponse.ok || !encryptedDataResponse.body) {
     throw new Error(`Failed to fetch encrypted data: ${response.status} ${response.statusText}`)
   }
@@ -52,7 +60,9 @@ async function main() {
   // TODO: store the session signature (https://developer.litprotocol.com/intro/first-request/generating-session-sigs#nodejs)
   const sessionSigs = await getSessionSigs({
     wallet: controllerWallet,
-    accessControlConditions,
+    accessControlConditions: /** @type import('@lit-protocol/types').AccessControlConditions */ (
+      /** @type {unknown} */ (accessControlConditions)
+    ),
     dataToEncryptHash,
     expiration: new Date(Date.now() + 1000 * 60 * 5).toISOString() // 5 min,
   })
@@ -81,7 +91,7 @@ async function main() {
     ipfsId: env.STORACHA_LIT_ACTION_CID,
     jsParams: {
       spaceDID,
-      ciphertext,
+      ciphertext: cypherText,
       dataToEncryptHash,
       accessControlConditions,
       invocation
