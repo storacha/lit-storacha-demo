@@ -6,6 +6,7 @@ import { StoreMemory } from '@web3-storage/w3up-client/stores/memory'
 import env from '../env.js'
 import { encryptLargeFile } from '../lib.js'
 import { parseProof } from '../utils.js'
+import * as EncryptedMetadata from '../encrypted-metadata/index.js'
 
 async function main() {
   const filePath = process.argv[2]
@@ -51,15 +52,23 @@ async function main() {
   console.log(`✅ Encrypted data root cid: ${rootEncryptedDataCid}`)
 
   // upload to storacha
+  /** @type {import('../encrypted-metadata/types.js').EncryptedMetadataInput} */
   const uploadData = {
-    encryptedDataCid: rootEncryptedDataCid.toString(),
-    ciphertext,
+    encryptedDataCID: rootEncryptedDataCid.toString(),
+    cypherText: ciphertext,
     dataToEncryptHash,
-    accessControlConditions
+    accessControlConditions: /** @type {[Record<string, any>]} */ (
+      /** @type {unknown} */ (accessControlConditions)
+    )
   }
-  const blob = new Blob([JSON.stringify(uploadData)])
+  const encryptedMetadata = EncryptedMetadata.create(uploadData)
+  const result = await encryptedMetadata.archive()
+  if (result.error) {
+    throw result.error
+  }
+  const car = /** @type{Uint8Array}*/ (result.ok)
   console.log('🔄 Uploading metadata to Storacha...')
-  const rootCid = await client.uploadFile(blob)
+  const rootCid = await client.uploadCAR(new Blob([car]))
   console.log(`✅ Metadata root cid: ${rootCid}`)
 }
 
