@@ -4,9 +4,9 @@ import * as Signer from '@ucanto/principal/ed25519'
 import { StoreMemory } from '@web3-storage/w3up-client/stores/memory'
 
 import env from '../env.js'
-import { encryptLargeFile } from '../lib.js'
+import { uploadEncryptedMetadata } from '../lib.js'
 import { parseProof } from '../utils.js'
-import * as EncryptedMetadata from '../encrypted-metadata/index.js'
+
 
 async function main() {
   const filePath = process.argv[2]
@@ -41,34 +41,9 @@ async function main() {
     }
   ]
 
-  console.log('🔄 Encrypting...')
-  const { ciphertext, dataToEncryptHash, encryptedBlobLike } = await encryptLargeFile(
-    filePath,
-    accessControlConditions
-  )
-  console.log(`✅ Encrypted file!`)
   console.log(`Uploading encrypted data to storacha...`)
-  const rootEncryptedDataCid = await client.uploadFile(encryptedBlobLike)
-  console.log(`✅ Encrypted data root cid: ${rootEncryptedDataCid}`)
+  const rootCid = await uploadEncryptedMetadata(client, filePath, accessControlConditions)
 
-  // upload to storacha
-  /** @type {import('../encrypted-metadata/types.js').EncryptedMetadataInput} */
-  const uploadData = {
-    encryptedDataCID: rootEncryptedDataCid.toString(),
-    cypherText: ciphertext,
-    dataToEncryptHash,
-    accessControlConditions: /** @type {[Record<string, any>]} */ (
-      /** @type {unknown} */ (accessControlConditions)
-    )
-  }
-  const encryptedMetadata = EncryptedMetadata.create(uploadData)
-  const result = await encryptedMetadata.archive()
-  if (result.error) {
-    throw result.error
-  }
-  const car = /** @type{Uint8Array}*/ (result.ok)
-  console.log('🔄 Uploading metadata to Storacha...')
-  const rootCid = await client.uploadCAR(new Blob([car]))
   console.log(`✅ Metadata root cid: ${rootCid}`)
 }
 

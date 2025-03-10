@@ -59,9 +59,15 @@ dependencies:
   '@ucanto/validator':
     specifier: ^9.0.2
     version: 9.0.2
+  '@web3-storage/upload-client':
+    specifier: ^17.1.4
+    version: 17.1.4
   '@web3-storage/w3up-client':
     specifier: ^17.1.2
     version: 17.1.2
+  carstream:
+    specifier: ^2.3.0
+    version: 2.3.0
   dotenv:
     specifier: ^16.4.7
     version: 16.4.7
@@ -683,7 +689,7 @@ packages:
     resolution: {integrity: sha512-ueULCaaSCcD+dQga6nKiRr+RSeVgdiYiEPKVUu5iQMNYDN+9osd0KpR3UDd9uQQ+6RWuv9L34SchfEwj7YIbOA==}
     engines: {node: '>=16.0.0', npm: '>=7.0.0'}
     dependencies:
-      multiformats: 13.3.1
+      multiformats: 13.3.2
     dev: false
 
   /@ipld/dag-ucan@3.4.0:
@@ -710,14 +716,14 @@ packages:
       yargs: 17.7.2
     dev: false
 
-  /@ipld/unixfs@2.2.0:
-    resolution: {integrity: sha512-lDQ2eRhJlbFaBoO3bhOmDVCLmpOnhwtwbilqUgAAhbhoPSmLrnv7gsBuToZjXOdPaEGSL7apkmm6nFrcU6zh4Q==}
+  /@ipld/unixfs@3.0.0:
+    resolution: {integrity: sha512-Tj3/BPOlnemcZQ2ETIZAO8hqAs9KNzWyX5J9+JCL9jDwvYwjxeYjqJ3v+9DusNvTBmJhZnGVP6ijUHrsuOLp+g==}
     dependencies:
       '@ipld/dag-pb': 4.1.3
       '@multiformats/murmur3': 2.1.8
       '@perma/map': 1.0.3
       actor: 2.3.1
-      multiformats: 11.0.2
+      multiformats: 13.3.2
       protobufjs: 7.4.0
       rabin-rs: 2.1.0
     dev: false
@@ -1285,7 +1291,7 @@ packages:
     resolution: {integrity: sha512-6vId1C46ra3R1sbJUOFCZnsUIveR9oF20yhPmAFxPm0JfrX3/ZRCgP3YDrBzlGoEppOXnA9czHeYc0T9mB6hbA==}
     engines: {node: '>=16.0.0', npm: '>=7.0.0'}
     dependencies:
-      multiformats: 13.3.1
+      multiformats: 13.3.2
       murmurhash3js-revisited: 3.0.0
     dev: false
 
@@ -1526,8 +1532,8 @@ packages:
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
     dev: true
 
-  /@types/retry@0.12.1:
-    resolution: {integrity: sha512-xoDlM2S4ortawSWORYqsdU+2rxdh4LRW9ytc3zmT37RIKQh6IHyKwwtKhKis9ah8ol07DCkZxPt8BBvPjC6v4g==}
+  /@types/retry@0.12.2:
+    resolution: {integrity: sha512-XISRgDJ2Tc5q4TRqvgJtzsRkFYNJzZrhTdtMoGVBttwzzQJkPnS3WWTFc7kuDRoPtPakl+T+OfdEUjYJj7Jbow==}
     dev: false
 
   /@ucanto/client@9.0.1:
@@ -2059,6 +2065,18 @@ packages:
       uint8arrays: 5.1.0
     dev: false
 
+  /@web3-storage/capabilities@18.1.0:
+    resolution: {integrity: sha512-jgZtymt2jJtER3SPsE0yoRSf1BzNo1hQIir6hfY3QlooxTwdETzPbF1rBs5El7BCCMHhQfB9hiLRniTIhnX4wA==}
+    dependencies:
+      '@ucanto/core': 10.3.1
+      '@ucanto/interface': 10.2.0
+      '@ucanto/principal': 9.0.2
+      '@ucanto/transport': 9.1.1
+      '@ucanto/validator': 9.1.0
+      '@web3-storage/data-segment': 5.3.0
+      uint8arrays: 5.1.0
+    dev: false
+
   /@web3-storage/data-segment@5.3.0:
     resolution: {integrity: sha512-zFJ4m+pEKqtKatJNsFrk/2lHeFSbkXZ6KKXjBe7/2ayA9wAar7T/unewnOcZrrZTnCWmaxKsXWqdMFy9bXK9dw==}
     dependencies:
@@ -2083,24 +2101,24 @@ packages:
       '@web3-storage/capabilities': 18.0.1
     dev: false
 
-  /@web3-storage/upload-client@17.1.3:
-    resolution: {integrity: sha512-pOD5EM6RJgsJ3gRZWfhwfbD21OLvNQ239aD4D5BsQsEEgEoqR8aXdrjDWU4T8DA4YXU6VIai/VGIsDXgw+eg7g==}
+  /@web3-storage/upload-client@17.1.4:
+    resolution: {integrity: sha512-jfVEcF7bVouxPy7kd1K5m6BaKeFzcH9zyyWC0CArByWLnKhuPhZ7+ykry3lwn82JIFXbEtmI563ewNuAAibieg==}
     dependencies:
       '@ipld/car': 5.4.0
       '@ipld/dag-cbor': 9.2.2
-      '@ipld/dag-ucan': 3.4.0
-      '@ipld/unixfs': 2.2.0
+      '@ipld/dag-ucan': 3.4.5
+      '@ipld/unixfs': 3.0.0
       '@ucanto/client': 9.0.1
-      '@ucanto/core': 10.0.1
+      '@ucanto/core': 10.3.1
       '@ucanto/interface': 10.2.0
       '@ucanto/transport': 9.1.1
       '@web3-storage/blob-index': 1.0.5
-      '@web3-storage/capabilities': 18.0.1
+      '@web3-storage/capabilities': 18.1.0
       '@web3-storage/data-segment': 5.3.0
       '@web3-storage/filecoin-client': 3.3.5
       ipfs-utils: 9.0.14
-      multiformats: 12.1.3
-      p-retry: 5.1.2
+      multiformats: 13.3.2
+      p-retry: 6.2.1
       varint: 6.0.0
     transitivePeerDependencies:
       - encoding
@@ -2121,7 +2139,7 @@ packages:
       '@web3-storage/capabilities': 18.0.1
       '@web3-storage/did-mailto': 2.1.0
       '@web3-storage/filecoin-client': 3.3.5
-      '@web3-storage/upload-client': 17.1.3
+      '@web3-storage/upload-client': 17.1.4
     transitivePeerDependencies:
       - encoding
     dev: false
@@ -3073,6 +3091,11 @@ packages:
       is-extglob: 2.1.1
     dev: false
 
+  /is-network-error@1.1.0:
+    resolution: {integrity: sha512-tUdRRAnhT+OtCZR/LxZelH/C7QtjtFrTu5tXCA8pl55eTUElUHT+GPYV8MBMBvea/j+NxQqVt3LbWMRir7Gx9g==}
+    engines: {node: '>=16'}
+    dev: false
+
   /is-number@7.0.0:
     resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
     engines: {node: '>=0.12.0'}
@@ -3351,6 +3374,10 @@ packages:
     resolution: {integrity: sha512-QxowxTNwJ3r5RMctoGA5p13w5RbRT2QDkoM+yFlqfLiioBp78nhDjnRLvmSBI9+KAqN4VdgOVWM9c0CHd86m3g==}
     dev: false
 
+  /multiformats@13.3.2:
+    resolution: {integrity: sha512-qbB0CQDt3QKfiAzZ5ZYjLFOs+zW43vA4uyM8g27PeEuXZybUOFyjrVdP93HPBHMoglibwfkdVwbzfUq8qGcH6g==}
+    dev: false
+
   /multiformats@9.9.0:
     resolution: {integrity: sha512-HoMUjhH9T8DDBNT+6xzkrd9ga/XiBI4xLr58LJACwK6G3HTOPeMz4nB4KJs33L2BelrIJa7P0VuNaVF3hMYfjg==}
 
@@ -3489,11 +3516,12 @@ packages:
       p-limit: 2.3.0
     dev: true
 
-  /p-retry@5.1.2:
-    resolution: {integrity: sha512-couX95waDu98NfNZV+i/iLt+fdVxmI7CbrrdC2uDWfPdUAApyxT4wmDlyOtR5KtTDmkDO0zDScDjDou9YHhd9g==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+  /p-retry@6.2.1:
+    resolution: {integrity: sha512-hEt02O4hUct5wtwg4H4KcWgDdm+l1bOaEy/hWzd8xtXB9BqxTWBBhb+2ImAtH4Cv4rPjV76xN3Zumqk3k3AhhQ==}
+    engines: {node: '>=16.17'}
     dependencies:
-      '@types/retry': 0.12.1
+      '@types/retry': 0.12.2
+      is-network-error: 1.1.0
       retry: 0.13.1
     dev: false
 
@@ -4063,7 +4091,7 @@ packages:
   /uint8arrays@5.1.0:
     resolution: {integrity: sha512-vA6nFepEmlSKkMBnLBaUMVvAC4G3CTmO58C12y4sq6WPDOR7mOFYOi7GlrQ4djeSbP6JG9Pv9tJDM97PedRSww==}
     dependencies:
-      multiformats: 13.3.1
+      multiformats: 13.3.2
     dev: false
 
   /uncrypto@0.1.3:

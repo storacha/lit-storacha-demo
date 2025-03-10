@@ -6,7 +6,7 @@ import { Signer } from '@ucanto/principal/ed25519'
 import env from '../env.js'
 import { getLit, getSessionSigs, getCapacityCredits, decryptWithKeyTo } from '../lib.js'
 import { createDecryptWrappedInvocation } from '../decrypt-capability.js'
-import * as EncryptedMetadata from 'src/encrypted-metadata/index.js'
+import * as EncryptedMetadata from '../encrypted-metadata/index.js'
 
 /**
  * rootCid - The CID of the encrypted data file uploaded to Storacha.
@@ -22,12 +22,12 @@ async function main() {
   let capacityTokenId = process.argv[5]
 
   console.log(`Fetching encrypted metadata...`)
-  const response = await fetch(`https://${rootCid}.ipfs.w3s.link`)
+  const response = await fetch(`https://${rootCid}.ipfs.w3s.link?format=car`)
   if (!response.ok) {
     throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`)
   }
   console.log('Encrypted content retrieved successfully')
-
+  
   const encryptedContentCar = new Uint8Array(await response.arrayBuffer())
   const encryptedContentResult = EncryptedMetadata.extract(encryptedContentCar)
   if (encryptedContentResult.error) {
@@ -35,7 +35,7 @@ async function main() {
   }
 
   let encryptedContent = encryptedContentResult.ok.toJSON()
-  const { encryptedDataCID, cypherText, dataToEncryptHash, accessControlConditions } =
+  const { encryptedDataCID, identityBoundCiphertext, plaintextKeyHash, accessControlConditions } =
     encryptedContent
 
   const encryptedDataResponse = await fetch(`https://${encryptedDataCID}.ipfs.w3s.link`)
@@ -63,7 +63,7 @@ async function main() {
     accessControlConditions: /** @type import('@lit-protocol/types').AccessControlConditions */ (
       /** @type {unknown} */ (accessControlConditions)
     ),
-    dataToEncryptHash,
+    dataToEncryptHash: plaintextKeyHash,
     expiration: new Date(Date.now() + 1000 * 60 * 5).toISOString() // 5 min,
   })
 
@@ -91,8 +91,8 @@ async function main() {
     ipfsId: env.STORACHA_LIT_ACTION_CID,
     jsParams: {
       spaceDID,
-      ciphertext: cypherText,
-      dataToEncryptHash,
+      ciphertext: identityBoundCiphertext,
+      dataToEncryptHash: plaintextKeyHash,
       accessControlConditions,
       invocation
     }

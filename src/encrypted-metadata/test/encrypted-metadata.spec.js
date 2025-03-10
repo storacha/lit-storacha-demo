@@ -2,17 +2,16 @@ import assert from 'node:assert'
 import { describe, it } from 'node:test'
 
 import * as Types from '../types.js'
-import { bytesToString } from '../utils.js'
 import { create, extract } from '../index.js'
 import * as Result from './helpers/result.js'
 
 
 /** @type {Types.EncryptedMetadataInput} */
 const encryptedMetadataInput = {
-  encryptedDataCID: 'bafkreic3uudkp6wzosfsyhuufs3kphahjjxwu6k3w2iwjyb7mc6o7ymobi',
-  cypherText:
+  encryptedDataCID: 'bafkreids275u5ex6xfw7d4k67afej43c6rhm2kzdox2z6or4jxrndgevae',
+  identityBoundCiphertext:
     'mF3OPa9dQ0wO4B1/XylmAV/eaHhLtM3JUPIbS175bvmqGaJUYroyDbsytV29q0cLD4XCpCRfCinntASNg9s730FIM7f4Mw2hVWeJ5g4akFA6BoZoaKgDC5Ln6MOQK5Ymb1y6No7um7Bn4uIIJTYNuUukDQvVxzY8LcRBc2ySR1Md+VSGzmyEgyvHtAI=',
-  dataToEncryptHash: '15f39e9a977cca43f16f3cd25237d711cd8130ff9763197b29df52a198607206',
+  plaintextKeyHash: '15f39e9a977cca43f16f3cd25237d711cd8130ff9763197b29df52a198607206',
   accessControlConditions: [
     {
       contractAddress: '',
@@ -41,8 +40,8 @@ describe('Encrypted Metadata', () => {
 
     const extractedDataJson = extractedData.toJSON()
 
-    assert.equal(extractedDataJson.cypherText, encryptedMetadataInput.cypherText)
-    assert.equal(extractedDataJson.dataToEncryptHash, encryptedMetadataInput.dataToEncryptHash)
+    assert.equal(extractedDataJson.identityBoundCiphertext, encryptedMetadataInput.identityBoundCiphertext)
+    assert.equal(extractedDataJson.plaintextKeyHash, encryptedMetadataInput.plaintextKeyHash)
     assert.equal(extractedDataJson.encryptedDataCID, encryptedMetadataInput.encryptedDataCID)
     assert.deepEqual(extractedData.accessControlConditions, encryptedMetadataInput.accessControlConditions)
   })
