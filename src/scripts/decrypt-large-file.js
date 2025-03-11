@@ -17,7 +17,7 @@ import * as EncryptedMetadata from '../encrypted-metadata/index.js'
 async function main() {
   const rootCid = process.argv[2]
   const delegationFilePath = process.argv[3]
-  const outputPath = process.argv[4]
+  const outputPath = process.argv[4] || 'decrypted.txt'
   /**@type {string | null} */
   let capacityTokenId = process.argv[5]
 
