@@ -1,6 +1,11 @@
 import * as fs from 'fs'
 import { ethers } from 'ethers'
 import { Readable } from 'stream'
+import { CID } from 'multiformats'
+import { CarIndexer } from '@ipld/car'
+import { ReadableStream } from 'stream/web'
+import { exporter } from 'ipfs-unixfs-exporter'
+import { MemoryBlockstore } from 'blockstore-core'
 import { Signer } from '@ucanto/principal/ed25519'
 
 import env from '../env.js'
@@ -37,13 +42,25 @@ async function main() {
   let encryptedContent = encryptedContentResult.ok.toJSON()
   const { encryptedDataCID, identityBoundCiphertext, plaintextKeyHash, accessControlConditions } =
     encryptedContent
+  const spaceDID = accessControlConditions[0].parameters[1]
 
-  const encryptedDataResponse = await fetch(`https://${encryptedDataCID}.ipfs.w3s.link`)
-  if (!encryptedDataResponse.ok || !encryptedDataResponse.body) {
-    throw new Error(`Failed to fetch encrypted data: ${response.status} ${response.statusText}`)
+  // NOTE: convert CAR to a block store
+  const iterable = await CarIndexer.fromBytes(encryptedContentCar)
+  const blockstore = new MemoryBlockstore()
+
+  for await (const { cid, blockLength, blockOffset } of iterable) {
+    const blockBytes = encryptedContentCar.slice(blockOffset, blockOffset + blockLength)
+    blockstore.put(cid, blockBytes)
   }
 
-  const spaceDID = accessControlConditions[0].parameters[1]
+  // NOTE: get the encrypted Data from the CAR file
+  const encryptedDataEntry = await exporter(CID.parse(encryptedDataCID), blockstore)
+  const encryptedDataBytes = new Uint8Array(Number(encryptedDataEntry.size))
+  let offset = 0
+  for await (const chunk of encryptedDataEntry.content()) {
+    encryptedDataBytes.set(chunk, offset)
+    offset += chunk.length
+  }
 
   const litNodeClient = await getLit()
   const controllerWallet = new ethers.Wallet(env.WALLET_PK)
@@ -109,10 +126,15 @@ async function main() {
     throw new Error('Decrypted data does not exist!')
   }
 
-  const readStream = Readable.fromWeb(
-    /** @type {import("stream/web").ReadableStream<any>}**/ (encryptedDataResponse.body)
+  const encryptedDataStream = Readable.fromWeb(
+    new ReadableStream({
+      start(controller) {
+        controller.enqueue(encryptedDataBytes)
+        controller.close()
+      }
+    })
   )
-  await decryptWithKeyTo(decryptedData, readStream, outputPath)
+  await decryptWithKeyTo(decryptedData, encryptedDataStream, outputPath)
 }
 
 main()
