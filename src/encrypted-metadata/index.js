@@ -6,7 +6,7 @@ import { CAR, ok, error, Schema } from '@ucanto/core'
 
 import * as Types from './types.js'
 import { UnknownFormat } from './errors.js'
-import { stringToBytes, matchesSchema, bytesToString } from './utils.js'
+import { stringToBytes, bytesToString } from './utils.js'
 
 export const version = 'encrypted/metadata@0.1'
 
@@ -43,7 +43,7 @@ class EncryptedMetadata {
   constructor(encryptedMetadataInput) {
     /** @type {Types.EncryptedMetadata} */
     let encryptedMetadata
-    if (matchesSchema(EncryptedMetadataInputSchema, encryptedMetadataInput)) {
+    if (EncryptedMetadataInputSchema.is(encryptedMetadataInput)) {
       encryptedMetadata = parse(
         /** @type {Types.EncryptedMetadataInput} */ (encryptedMetadataInput)
       )
