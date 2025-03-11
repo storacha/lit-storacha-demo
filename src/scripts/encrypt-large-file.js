@@ -4,8 +4,9 @@ import * as Signer from '@ucanto/principal/ed25519'
 import { StoreMemory } from '@web3-storage/w3up-client/stores/memory'
 
 import env from '../env.js'
-import { encryptLargeFile } from '../lib.js'
+import { uploadEncryptedMetadata } from '../lib.js'
 import { parseProof } from '../utils.js'
+
 
 async function main() {
   const filePath = process.argv[2]
@@ -40,26 +41,9 @@ async function main() {
     }
   ]
 
-  console.log('🔄 Encrypting...')
-  const { ciphertext, dataToEncryptHash, encryptedBlobLike } = await encryptLargeFile(
-    filePath,
-    accessControlConditions
-  )
-  console.log(`✅ Encrypted file!`)
   console.log(`Uploading encrypted data to storacha...`)
-  const rootEncryptedDataCid = await client.uploadFile(encryptedBlobLike)
-  console.log(`✅ Encrypted data root cid: ${rootEncryptedDataCid}`)
+  const rootCid = await uploadEncryptedMetadata(client, filePath, accessControlConditions)
 
-  // upload to storacha
-  const uploadData = {
-    encryptedDataCid: rootEncryptedDataCid.toString(),
-    ciphertext,
-    dataToEncryptHash,
-    accessControlConditions
-  }
-  const blob = new Blob([JSON.stringify(uploadData)])
-  console.log('🔄 Uploading metadata to Storacha...')
-  const rootCid = await client.uploadFile(blob)
   console.log(`✅ Metadata root cid: ${rootCid}`)
 }
 

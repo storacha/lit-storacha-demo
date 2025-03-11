@@ -3,8 +3,8 @@
     "strict": true,
     "baseUrl": "./",
     "paths": {
-      "*": ["global.d.ts"]
+      "*": ["lit-globals.d.ts"]
     }
   },
-  "include": ["global.d.ts", "**/*.ts"]
+  "include": ["lit-globals.d.ts", "**/*.ts"]
 }

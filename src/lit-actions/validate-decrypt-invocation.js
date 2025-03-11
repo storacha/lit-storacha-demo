@@ -1,3 +1,4 @@
+/// <reference path="./lit-globals.d.ts" />
 import { ok, Schema, DID, fail, access } from '@ucanto/validator'
 import { extract } from '@ucanto/core/delegation'
 import { Verifier } from '@ucanto/principal'
@@ -23,21 +24,43 @@ const Decrypt = capability({
   }
 })
 
+/**
+ * @typedef {Object} Delegation
+ * @property {Array<any>} proofs - Array of proofs
+ * @property {Array<{can: string}>} capabilities - Array of capabilities
+ * @property {{did: () => string}} issuer - The issuer
+ * @property {{did: () => string}} audience - The audience
+ */
+
+/**
+ * Validates a decrypt delegation
+ * @param {Delegation} decryptDelegation - The delegation to validate
+ * @throws {Error} If the delegation is invalid
+ */
 const validateDecryptDelegation = decryptDelegation => {
   if (decryptDelegation.proofs.length !== 1) {
     throw new Error('Expected one Decrypt delegation!')
   }
 
-  if (!decryptDelegation.proofs[0].capabilities.some(c => c.can === Decrypt.can)) {
+  if (!decryptDelegation.proofs[0].capabilities.some(/** @param {{can: string}} c */ c => c.can === Decrypt.can)) {
     throw new Error('Delegation does not contain Decrypt capability!')
   }
 }
 
+/**
+ * Unwraps an invocation to get its delegation
+ * @param {Delegation} wrappedInvocation - The invocation to unwrap
+ * @returns {Delegation} The unwrapped delegation
+ */
 const unwrapInvocation = wrappedInvocation => {
   validateDecryptDelegation(wrappedInvocation)
   return wrappedInvocation.proofs[0]
 }
 
+/**
+ * Decrypts content using Lit Protocol
+ * @returns {Promise<void>}
+ */
 const decrypt = async () => {
   try {
     const wrappedInvocationCar = dagJSON.parse(invocation)
@@ -72,7 +95,7 @@ const decrypt = async () => {
       validateAuthorization: () => ok({}) // TODO: check if it's not revoked
     })
 
-    /** @type any */
+    /** @type {Record<string, any>} */
     let response = {}
 
     if (authorization.ok) {
@@ -90,7 +113,6 @@ const decrypt = async () => {
     } else {
       response.validateAccess = JSON.stringify(authorization)
     }
-
     return Lit.Actions.setResponse({ response: JSON.stringify(response) })
   } catch (/** @type any*/ error) {
     return Lit.Actions.setResponse({ response: JSON.stringify({ error: error.message }) })

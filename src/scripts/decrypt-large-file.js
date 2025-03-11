@@ -1,11 +1,17 @@
 import * as fs from 'fs'
 import { ethers } from 'ethers'
 import { Readable } from 'stream'
+import { CID } from 'multiformats'
+import { CarIndexer } from '@ipld/car'
+import { ReadableStream } from 'stream/web'
+import { exporter } from 'ipfs-unixfs-exporter'
+import { MemoryBlockstore } from 'blockstore-core'
 import { Signer } from '@ucanto/principal/ed25519'
 
 import env from '../env.js'
 import { getLit, getSessionSigs, getCapacityCredits, decryptWithKeyTo } from '../lib.js'
 import { createDecryptWrappedInvocation } from '../decrypt-capability.js'
+import * as EncryptedMetadata from '../encrypted-metadata/index.js'
 
 /**
  * rootCid - The CID of the encrypted data file uploaded to Storacha.
@@ -16,26 +22,45 @@ import { createDecryptWrappedInvocation } from '../decrypt-capability.js'
 async function main() {
   const rootCid = process.argv[2]
   const delegationFilePath = process.argv[3]
-  const outputPath = process.argv[4]
+  const outputPath = process.argv[4] || 'decrypted.txt'
   /**@type {string | null} */
   let capacityTokenId = process.argv[5]
 
-  const response = await fetch(`https://${rootCid}.ipfs.w3s.link`)
+  console.log(`Fetching encrypted metadata...`)
+  const response = await fetch(`https://${rootCid}.ipfs.w3s.link?format=car`)
   if (!response.ok) {
     throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`)
   }
-
-  let encryptedContent = await response.text()
-  console.log('Encrypted content retrieved successfully:', encryptedContent)
-  const { encryptedDataCid, ciphertext, dataToEncryptHash, accessControlConditions } =
-    JSON.parse(encryptedContent)
-
-  const encryptedDataResponse = await fetch(`https://${encryptedDataCid}.ipfs.w3s.link`)
-  if (!encryptedDataResponse.ok || !encryptedDataResponse.body) {
-    throw new Error(`Failed to fetch encrypted data: ${response.status} ${response.statusText}`)
+  console.log('Encrypted content retrieved successfully')
+  
+  const encryptedContentCar = new Uint8Array(await response.arrayBuffer())
+  const encryptedContentResult = EncryptedMetadata.extract(encryptedContentCar)
+  if (encryptedContentResult.error) {
+    throw encryptedContentResult.error
   }
 
+  let encryptedContent = encryptedContentResult.ok.toJSON()
+  const { encryptedDataCID, identityBoundCiphertext, plaintextKeyHash, accessControlConditions } =
+    encryptedContent
   const spaceDID = accessControlConditions[0].parameters[1]
+
+  // NOTE: convert CAR to a block store
+  const iterable = await CarIndexer.fromBytes(encryptedContentCar)
+  const blockstore = new MemoryBlockstore()
+
+  for await (const { cid, blockLength, blockOffset } of iterable) {
+    const blockBytes = encryptedContentCar.slice(blockOffset, blockOffset + blockLength)
+    blockstore.put(cid, blockBytes)
+  }
+
+  // NOTE: get the encrypted Data from the CAR file
+  const encryptedDataEntry = await exporter(CID.parse(encryptedDataCID), blockstore)
+  const encryptedDataBytes = new Uint8Array(Number(encryptedDataEntry.size))
+  let offset = 0
+  for await (const chunk of encryptedDataEntry.content()) {
+    encryptedDataBytes.set(chunk, offset)
+    offset += chunk.length
+  }
 
   const litNodeClient = await getLit()
   const controllerWallet = new ethers.Wallet(env.WALLET_PK)
@@ -52,8 +77,10 @@ async function main() {
   // TODO: store the session signature (https://developer.litprotocol.com/intro/first-request/generating-session-sigs#nodejs)
   const sessionSigs = await getSessionSigs({
     wallet: controllerWallet,
-    accessControlConditions,
-    dataToEncryptHash,
+    accessControlConditions: /** @type import('@lit-protocol/types').AccessControlConditions */ (
+      /** @type {unknown} */ (accessControlConditions)
+    ),
+    dataToEncryptHash: plaintextKeyHash,
     expiration: new Date(Date.now() + 1000 * 60 * 5).toISOString() // 5 min,
   })
 
@@ -81,8 +108,8 @@ async function main() {
     ipfsId: env.STORACHA_LIT_ACTION_CID,
     jsParams: {
       spaceDID,
-      ciphertext,
-      dataToEncryptHash,
+      ciphertext: identityBoundCiphertext,
+      dataToEncryptHash: plaintextKeyHash,
       accessControlConditions,
       invocation
     }
@@ -99,10 +126,15 @@ async function main() {
     throw new Error('Decrypted data does not exist!')
   }
 
-  const readStream = Readable.fromWeb(
-    /** @type {import("stream/web").ReadableStream<any>}**/ (encryptedDataResponse.body)
+  const encryptedDataStream = Readable.fromWeb(
+    new ReadableStream({
+      start(controller) {
+        controller.enqueue(encryptedDataBytes)
+        controller.close()
+      }
+    })
   )
-  await decryptWithKeyTo(decryptedData, readStream, outputPath)
+  await decryptWithKeyTo(decryptedData, encryptedDataStream, outputPath)
 }
 
 main()
