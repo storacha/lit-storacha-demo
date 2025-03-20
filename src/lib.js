@@ -1,12 +1,15 @@
 import * as fs from 'fs'
 import { ethers } from 'ethers'
 import { Readable } from 'node:stream'
+import { CARWriterStream } from 'carstream'
 import { pipeline } from 'node:stream/promises'
 import { LitContracts } from '@lit-protocol/contracts-sdk'
 import { LitNodeClient } from '@lit-protocol/lit-node-client'
+import * as EncryptedMetadata from './encrypted-metadata/index.js'
 import { encryptFile, encryptString } from '@lit-protocol/encryption'
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
 import { LIT_ABILITY, LIT_NETWORK, LIT_RPC } from '@lit-protocol/constants'
+import { createFileEncoderStream } from '@web3-storage/upload-client/unixfs'
 import {
   generateAuthSig,
   LitActionResource,
@@ -86,8 +89,8 @@ export async function encryptLargeFile(filePath, accessControlConditions) {
   )
 
   return {
-    ciphertext,
-    dataToEncryptHash,
+    identityBoundCiphertext: ciphertext,
+    plaintextKeyHash: dataToEncryptHash,
     encryptedBlobLike: {
       name: filePath,
       stream: () =>
@@ -96,6 +99,52 @@ export async function encryptLargeFile(filePath, accessControlConditions) {
       size: stat.size
     } // Convert to Web ReadableStream
   }
+}
+
+/**
+ * @param {import('@web3-storage/w3up-client/types.js').Client} client
+ * @param {string} filePath
+ * @param {import('@lit-protocol/types').AccessControlConditions} accessControlConditions
+ */
+export async function uploadEncryptedMetadata(client, filePath, accessControlConditions) {
+  const { identityBoundCiphertext, plaintextKeyHash, encryptedBlobLike } = await encryptLargeFile(
+    filePath,
+    accessControlConditions
+  )
+
+  const rootCid = await client.uploadCAR({
+    stream () {
+      /** @type {any} */
+      let root
+      return createFileEncoderStream(encryptedBlobLike)
+        .pipeThrough(new TransformStream({
+          transform (block, controller) {
+            root = block
+            controller.enqueue(block)
+          },
+          async flush (controller) {
+            if (!root) throw new Error('missing root block')
+
+              /** @type {import('./encrypted-metadata/types.js').EncryptedMetadataInput} */
+            const uploadData = {
+              encryptedDataCID: root.cid.toString(),
+              identityBoundCiphertext,
+              plaintextKeyHash,
+              accessControlConditions: /** @type {[Record<string, any>]} */ (
+                /** @type {unknown} */ (accessControlConditions)
+              )
+            }
+
+            const encryptedMetadata = EncryptedMetadata.create(uploadData)
+            const { cid, bytes } = await encryptedMetadata.archiveBlock()
+            controller.enqueue({ cid, bytes })
+          }
+        }))
+        .pipeThrough(new CARWriterStream())
+    }
+  })
+
+  return rootCid
 }
 
 /**
