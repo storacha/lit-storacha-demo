@@ -44,7 +44,7 @@ async function main() {
     accessControlConditions
   }
   const blob = new Blob([JSON.stringify(uploadData)])
-  console.log('🔄 Uploading to Storacha...')
+  console.log(`🔄 Uploading to space ${space.did()} ...`)
   const rootCid = await client.uploadFile(blob)
   console.log(`✅ root cid: ${rootCid}`)
 }

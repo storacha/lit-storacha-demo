@@ -21,7 +21,7 @@ Before you start, run `pnpm install` to install dependencies and configure the e
    With the `root CID` from the encryption step, your space DID where the file was uploaded, and the DID of the audience you want to grant decryption capability to, run:
 
    ```bash
-   node src/scripts/delegate-decrypt-capability.js id:key:z6MktfnQz8Kcz5nsC65oyXWFXhbbAZQavjg6aaaa000space bafkreihesl6njk7gimdhxwlode2qvkpr4eeywmw5bmffjxaa000rootCid did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi
+   node src/scripts/delegate-decrypt-capability.js did:key:z6MktfnQz8Kcz5nsC65oyXWFXhbbAZQavjg6aaaa000space bafkreihesl6njk7gimdhxwlode2qvkpr4eeywmw5bmffjxaa000rootCid did:key:z6Mkk89bC3JrVqKie71YEcc5M1SMVxuCgNx6zLZ8SYJsxALi
    ```
 
    This will output the `delegation.car` file.
